@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: e112ca630b33830449443262a3d17009
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - btnDConnect: {instanceID: 0}
+  - btnConnect: {instanceID: 0}
+  - StatusText: {instanceID: 0}
+  - ButtonPositionText: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

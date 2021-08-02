@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="EggBLE">
+    <Position X="9.5" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>EAQSBAQpCDAwBEQAAAIAgIEgAABCAACEACAMEAEKAAA=</HashCode>
+      <FileName>Assets\Scenes\EggScene\EggBLE.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="egg" />
+      <Field Name="state" />
+    </ShowAsAssociation>
+  </Class>
+  <Class Name="EggState">
+    <Position X="9.75" Y="6.25" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAQAASBAAAAgAAAQAgCAAAAgABAAAAAAIAAAAAA=</HashCode>
+      <FileName>Assets\Scenes\EggScene\EggState.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="EggUI">
+    <Position X="2.25" Y="1" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+      <Compartment Name="Properties" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>IAYK4KQQACQ4AAmCIEsDBUCGFoQAgBgACCAAE4ABBEA=</HashCode>
+      <FileName>Assets\Scenes\EggScene\EggUI.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="ElectronicEgg">
+    <Position X="5.75" Y="1" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAUEQAAAASAAEAAIIBAABAAAAAAIAIEEEAEAABCQAAA=</HashCode>
+      <FileName>Assets\Scenes\EggScene\ElectronicEgg.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Field Name="ble" />
+      <Field Name="ui" />
+      <Field Name="state" />
+    </ShowAsAssociation>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
