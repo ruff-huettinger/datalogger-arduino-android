@@ -64,8 +64,6 @@ public class EggBLE : MonoBehaviour
                 ElectronicEgg.PrintLog("Update RSSI");
                 state.rssi = rssi;
             }
-            ElectronicEgg.PrintLog("Update RSSI");
-
         }, true);
     }
 

@@ -9,7 +9,6 @@ using System.Linq;
 public class EggUI : MonoBehaviour
 {
     public Button statusBtn;
-    public Button autoRefreshBtn;
     public Button refreshBtn;
     public Button startedBtn;
     public Button submitBtn;
@@ -22,11 +21,9 @@ public class EggUI : MonoBehaviour
 
     public Text StatusText;
     public Text SensorText;
-    public Text RssiText;
     public Text TempText;
     public Text HumiText;
     public Text LightText;
-    public Text SensorStateText;
     public Text BLEWarningText;
 
 
@@ -175,14 +172,9 @@ public class EggUI : MonoBehaviour
     {
         StatusText.text = value;
     }
-    public void SetStateText(string value)
-    {
-        SensorStateText.text = value;
-    }
 
     public void UpdateRSSI(float rssiValue)
     {
-        RssiText.text = rssiDefText + rssiValue + " dBm";
     }
 
     public void UpdateSliders(float bat, float sd)
@@ -282,7 +274,6 @@ public class EggUI : MonoBehaviour
 
     private void GetDefaultTexts()
     {
-        rssiDefText = RssiText.text;
         humiDefText = HumiText.text;
         tempDefText = TempText.text;
         lightDefText = LightText.text;

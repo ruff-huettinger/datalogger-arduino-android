@@ -46,8 +46,6 @@ public class ElectronicEgg : MonoBehaviour
                     ui.HidePanel(ui.functionsPanel);
                     ui.SetPanelColor(ui.sensorPanel, new Color(0.5f, 0.5f, 0.5f));
                     ui.HideButton(ui.refreshBtn);
-                    ui.SetStateText("Letzte Sensorwerte");
-                    ui.ShowText(ui.RssiText);
                 }
                 ui.UpdateRSSI(state.rssi);
                 break;
@@ -65,15 +63,12 @@ public class ElectronicEgg : MonoBehaviour
                 {
                     ui.SetStatusText("Verbunden");
                     ui.ChangeStatusButton(true, "Trennen");
-                    ui.HideText(ui.RssiText);
                     ui.ShowPanel(ui.functionsPanel);
                     ui.SetPanelColor(ui.sensorPanel, new Color(0.9f, 0.9f, 0.9f));
                     ui.ShowButton(ui.refreshBtn);
                     ui.ShowSensorValues(state.sensorValues);
-                    ui.SetStateText("Aktuelle Sensorwerte");
                     ui.UpdateSliders(state.batteryValue, state.sdFillPercentage);
                     ui.SetStartButton(state.started);
-                    ui.HideText(ui.RssiText);
                     ui.UpdateCustomMode(state.hourModes);
 
                     if (!ui.togglesCreated)
