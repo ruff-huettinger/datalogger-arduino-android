@@ -10,6 +10,7 @@ public class ElectronicEgg : MonoBehaviour
     // toDo: Submit-Button active?
     // toDo: third Button in settingsPanel
     // toDo: What happens on cancel button click?
+    // toDo: Fix flickering
 
     public EggBLE ble;
     public EggUI ui;
@@ -26,8 +27,11 @@ public class ElectronicEgg : MonoBehaviour
     /// </summary>
     void Start()
     {
+        //window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         PrintLog("Start");
         ui.SwitchScreenTo("main");
+        //Screen.fullScreen = false;
+        ApplicationChrome.SetupAndroidTheme(ApplicationChrome.ToARGB(Color.black), ApplicationChrome.ToARGB(Color.black));
     }
 
     void Update()
@@ -92,6 +96,14 @@ public class ElectronicEgg : MonoBehaviour
         }
         previousState = currentState;
         currentState = nextState;
+    }
+
+    public void OnApplicationPause(bool pause)
+    {
+        //(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+        //       WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+
+        Screen.fullScreen = false;
     }
 
     public void OnConnectButton()
