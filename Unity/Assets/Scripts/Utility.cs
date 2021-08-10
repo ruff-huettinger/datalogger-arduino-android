@@ -17,6 +17,16 @@ public static class Utility
         yield return new WaitForSeconds(delay);
         f();
     }
+
+    public static float RemapClamped(float aValue, float aIn1, float aIn2, float aOut1, float aOut2)
+    {
+        float t = (aValue - aIn1) / (aIn2 - aIn1);
+        if (t > 1f)
+            return aOut2;
+        if (t < 0f)
+            return aOut1;
+        return aOut1 + (aOut2 - aOut1) * t;
+    }
 }
 
 //#if UNITY_ANDROID && !UNITY_EDITOR
@@ -348,7 +358,7 @@ class ApplicationChrome
         Color32 c = (Color32)color;
         byte[] b = new byte[] { c.b, c.g, c.r, c.a };
         return System.BitConverter.ToInt32(b, 0);
-    }
+    } 
 }
 
 

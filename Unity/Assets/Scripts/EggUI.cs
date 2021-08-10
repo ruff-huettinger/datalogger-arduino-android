@@ -8,6 +8,8 @@ using System.Linq;
 
 public class EggUI : MonoBehaviour
 {
+    private const double RSSI_TIMEOUT_S = 5.0f;
+
     public Button statusBtn;
     public Button refreshBtn;
     public Button startedBtn;
@@ -30,9 +32,9 @@ public class EggUI : MonoBehaviour
 
     // Default texts for the textfields
     private string rssiDefText = "RSSI: ";
-    private string humiDefText;
-    private string tempDefText;
-    private string lightDefText;
+    private string humiDefText = "";
+    private string tempDefText = "";
+    private string lightDefText = "";
 
     public Slider batSlider;
     public Slider spaceSlider;
@@ -41,13 +43,16 @@ public class EggUI : MonoBehaviour
     public GameObject settingsScreen;
     public GameObject popupScreen;
 
+    public Dictionary<string, GameObject> screenList = new Dictionary<string, GameObject>();
 
     public GameObject togglePanel;
     public GameObject statusPanel;
     public GameObject sensorPanel;
     public GameObject functionsPanel;
+    public GameObject rssiPanel;
 
-    public Dictionary<string, GameObject> panelsList = new Dictionary<string, GameObject>();
+    public Image rssiIcon;
+
 
     /// <summary>
     /// Dropdown for selecting the time-interval of sensor-measurings
@@ -86,15 +91,15 @@ public class EggUI : MonoBehaviour
 
     void Awake()
     {
-        panelsList.Add("main", mainScreen);
-        panelsList.Add("settings", settingsScreen);
-        panelsList.Add("popup", popupScreen);
+        screenList.Add("main", mainScreen);
+        screenList.Add("settings", settingsScreen);
+        screenList.Add("popup", popupScreen);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        GetDefaultTexts();
+        //GetDefaultTexts();
         eggOrigRotation = eggObj.transform.rotation;
     }
 
@@ -106,12 +111,12 @@ public class EggUI : MonoBehaviour
 
     public void SwitchScreenTo(string screenName)
     {
-        if (panelsList[screenName] != null)
+        if (screenList[screenName] != null)
         {
-            panelsList[screenName].SetActive(true);
+            screenList[screenName].SetActive(true);
         }
 
-        foreach (KeyValuePair<string, GameObject> i in panelsList)
+        foreach (KeyValuePair<string, GameObject> i in screenList)
         {
             if (i.Key != screenName)
             {
@@ -173,8 +178,21 @@ public class EggUI : MonoBehaviour
         StatusText.text = value;
     }
 
-    public void UpdateRSSI(float rssiValue)
+    public void UpdateRSSI(float rssiValue, DateTime lastRSSITime)
     {
+        TimeSpan difference = DateTime.Now.Subtract(lastRSSITime);
+        //ElectronicEgg.PrintLog(difference.TotalSeconds.ToString());
+        if (!(difference.TotalSeconds > RSSI_TIMEOUT_S))
+        {
+            ShowButton(statusBtn);
+            rssiValue = Mathf.Abs(rssiValue);
+            rssiIcon.fillAmount = Utility.RemapClamped(rssiValue, 50, 100, 1.0f, 0.17f);
+        }
+        else
+        {
+            HideButton(statusBtn);
+            rssiIcon.fillAmount = 0.17f;
+        }
     }
 
     public void UpdateSliders(float bat, float sd)
@@ -286,13 +304,13 @@ public class EggUI : MonoBehaviour
             switch (hourModes[i])
             {
                 case MODEOFHOUR.OFF:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = Color.gray;
+                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
                     break;
                 case MODEOFHOUR.AUDIO:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = Color.red;
+                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(237, 144, 8, 255);
                     break;
                 case MODEOFHOUR.BLE:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = Color.blue;
+                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(2, 89, 208, 255);
                     break;
                 default:
                     Console.WriteLine("Default case");

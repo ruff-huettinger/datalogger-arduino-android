@@ -6,11 +6,9 @@ using System.Collections.Generic;
 
 public class ElectronicEgg : MonoBehaviour
 {
-    // toDo: How to display RSSI:0?
     // toDo: Submit-Button active?
-    // toDo: third Button in settingsPanel
     // toDo: What happens on cancel button click?
-    // toDo: Fix flickering
+    // toDo: add formating of sd card
 
     public EggBLE ble;
     public EggUI ui;
@@ -27,10 +25,10 @@ public class ElectronicEgg : MonoBehaviour
     /// </summary>
     void Start()
     {
-        //window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         PrintLog("Start");
         ui.SwitchScreenTo("main");
-        //Screen.fullScreen = false;
+        
+        //sets the app to fullscreen with status-bar but without navigation bar
         ApplicationChrome.SetupAndroidTheme(ApplicationChrome.ToARGB(Color.black), ApplicationChrome.ToARGB(Color.black));
     }
 
@@ -50,16 +48,18 @@ public class ElectronicEgg : MonoBehaviour
                     ui.HidePanel(ui.functionsPanel);
                     ui.SetPanelColor(ui.sensorPanel, new Color(0.5f, 0.5f, 0.5f));
                     ui.HideButton(ui.refreshBtn);
+                    ui.ShowPanel(ui.rssiPanel);
                 }
-                ui.UpdateRSSI(state.rssi);
+                ui.UpdateRSSI(state.rssi, state.lastRSSITime);
                 break;
 
             case APPSTATES.CONNECTING:
                 if (currentState != previousState)
                 {
                     ble.StopRSSIScan();
-                    ble.StartConnection();
+                    this.Invoke(ble.StartConnection, 0.5f);
                     ui.ChangeStatusButton(false, "Verbinde...");
+                    ui.HidePanel(ui.rssiPanel);
                 }
                 break;
             case APPSTATES.CONNECTED:
@@ -100,10 +100,6 @@ public class ElectronicEgg : MonoBehaviour
 
     public void OnApplicationPause(bool pause)
     {
-        //(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-        //       WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
-
-        Screen.fullScreen = false;
     }
 
     public void OnConnectButton()

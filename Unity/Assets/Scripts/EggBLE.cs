@@ -17,11 +17,7 @@ public class EggBLE : MonoBehaviour
     private const string updateUUID = "f1111a7f-0006-41f9-a127-aedf35a799b3";
     private const string startedUUID = "f1111a7f-0007-41f9-a127-aedf35a799b3";
 
-    private bool _connected = false;
-    private bool _connecting = false;
-    private bool _disconnecting = false;
     public bool initialized { get; private set; } = false;
-
 
     private string _deviceAddress;
 
@@ -61,8 +57,9 @@ public class EggBLE : MonoBehaviour
             // ElectronicEgg.PrintLog(name + rssi);
             if (name.Contains(DeviceName))
             {
-                ElectronicEgg.PrintLog("Update RSSI");
+                //ElectronicEgg.PrintError("Update RSSI: " + rssi);
                 state.rssi = rssi;
+                state.lastRSSITime = DateTime.Now;
             }
         }, true);
     }
@@ -95,6 +92,7 @@ public class EggBLE : MonoBehaviour
             BluetoothLEHardwareInterface.ConnectToPeripheral(_deviceAddress, (serviceUUID) =>
             {
                 this.Invoke(RequestMTU, 1.0f);
+                //this.Invoke(() => { egg.currentState = APPSTATES.CONNECTED; }, 1.0f);
             }, null, null, (x) =>
             {
                 egg.currentState = APPSTATES.DISCONNECTED;

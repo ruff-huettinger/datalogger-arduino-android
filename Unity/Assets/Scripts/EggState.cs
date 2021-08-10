@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,6 +17,9 @@ public class EggState : MonoBehaviour
 
     public Dictionary<ID, float> sensorValues { get; set; } = new Dictionary<ID, float>();
     public bool present { get; set; } = false;
+
+    public DateTime lastRSSITime { get; set; } = new DateTime();
+
 
     /// <summary>
     /// The default BLE-hours for the table-presets
