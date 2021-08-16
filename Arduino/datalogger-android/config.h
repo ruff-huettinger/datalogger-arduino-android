@@ -26,7 +26,7 @@
 //#define DEBUG_SERIAL
 
 // Uncomment for using a pure NANO 33 BLE Board without egg
-#define DEBUG_BOARD
+//#define DEBUG_BOARD
 
  // Uncomment for adding memory information to sensor-data
 #define DEBUG_MEMORY
@@ -69,6 +69,8 @@ const static uint32_t BLE_TIME_SEC = 59;
 #define USING_APDS_LIGHT  // 1x
 #define USING_ANALOG_LIGHT // 2x
 #define USING_BATTERY_SENSOR // 1x
+//#define USING_HTS_INTERN  // 2x
+
 
 enum SENSORID
 {
@@ -84,6 +86,8 @@ enum SENSORID
 	LIGHTANAONE,
 	LIGHTANATWO,
 	BATSENS,
+	INTTEMP,
+	INTHUMI,
 };
 
 
@@ -111,7 +115,7 @@ const static uint32_t AUDIO_FILE_WRITE_DELAY_MS = 1000;
 
 // use a higher GAIN if records are to quiet
 // use a lower gain if records overmodulate
-const static uint8_t GAIN = 15;
+const static uint8_t GAIN = 30;
 
 // Keep these settings for 15kHz/8bit Audio
 const static uint16_t BUFFER_SIZE = 1024;

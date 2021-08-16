@@ -71,6 +71,7 @@ void SensorManager::getSensorValues(measuring* arr)
 #else
 	SensorTemp hts;
 #endif
+	hts.setWire(&Wire);
 	hts.init();
 #ifdef USING_HTS_TEMP
 	arr[slotToFill].valueName = "temp";
@@ -131,7 +132,23 @@ void SensorManager::getSensorValues(measuring* arr)
 	arr[slotToFill].valueName = "bat";
 	arr[slotToFill].id = BATSENS;
 	arr[slotToFill].value = pm.getAnalogAvg();
+	slotToFill++;
 #endif // USING_BATTERY_SENSOR
+
+#ifdef USING_HTS_INTERN
+	SensorTemp htsi;
+	htsi.setWire(&Wire1);
+	htsi.init();
+	arr[slotToFill].valueName = "temp";
+	arr[slotToFill].id = INTTEMP;
+	htsi.getSensorValue(&arr[slotToFill]);
+	slotToFill++;
+	arr[slotToFill].valueName = "humi";
+	arr[slotToFill].id = INTHUMI;
+	htsi.getSensorValue(&arr[slotToFill]);
+	htsi.stop();
+	slotToFill++;
+#endif // USING_HTS_INTERN
 }
 
 
@@ -166,6 +183,9 @@ uint8_t SensorManager::getDataLength() {
 #ifdef USING_BATTERY_SENSOR
 	numOfMeasurings += 1;
 #endif // USING_BATTERY_SENSOR
+#ifdef USING_HTS_INTERN
+	numOfMeasurings += 2;
+#endif // USING_HTS_INTERN
 	return numOfMeasurings;
 }
 
@@ -199,12 +219,14 @@ void SensorManager::printSensorValues(measuring* dataToPrint, uint8_t numOfSenso
 	}
 }
 
+/*
 void SensorManager::addIDs(measuring* values)
 {
 	for (int i = 0; i < NUMBER_OF_SENSORS_FOR_APP; i++) {
 		values[i].id = i;
 	}
 }
+*/
 
 bool SensorManager::getMeasurementActive()
 {

@@ -26,11 +26,14 @@ private:
 
 	const float TEMP_OFFSET = -2.0f;
 	const float HUMI_OFFSET = 0.0f;
+	
+	TwoWire* wireToUse_ = NULL;
 
 public:
 	virtual void init();
 	virtual void stop();
 	virtual void getSensorValue(measuring* values);
+	void setWire(TwoWire* wireToUse_);
 	SensorTemp() {};
 	~SensorTemp() {};
 };

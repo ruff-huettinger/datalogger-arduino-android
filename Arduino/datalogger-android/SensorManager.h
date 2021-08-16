@@ -42,7 +42,7 @@ public:
 	// prints sensor values to serial
 	void printSensorValues(measuring* dataToPrint, uint8_t numOfSensors);
 
-	void addIDs(measuring* values);
+	//void addIDs(measuring* values); not in use
 
 	static bool getMeasurementActive();
 

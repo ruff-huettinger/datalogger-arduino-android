@@ -4,17 +4,9 @@ void SensorTemp::init()
 {
 	//Initiate the Wire library and join the I2C bus
 
-#ifndef DEBUG_BOARD
-	Wire.begin();
-	smeHumidity.setWire(&Wire);
+	wireToUse_->begin();
+	smeHumidity.setWire(wireToUse_);
 	digitalWrite(PIN_ENABLE_HTS, LOW);
-#else
-	Wire1.begin();
-	smeHumidity.setWire(&Wire1);
-#endif // DEBUG_BOARD
-
-	//uint32_t startMillis = millis();
-	//while ((millis() - startMillis) < 50) {};
 
 	smeHumidity.begin();
 
@@ -24,12 +16,8 @@ void SensorTemp::init()
 
 void SensorTemp::stop()
 {
-#ifndef DEBUG_BOARD
-	Wire.end();
+	wireToUse_->end();
 	digitalWrite(PIN_ENABLE_HTS, HIGH);
-#else
-	Wire1.end();
-#endif // DEBUG_BOARD
 }
 
 void SensorTemp::getSensorValue(measuring* values) {
@@ -44,5 +32,10 @@ void SensorTemp::getSensorValue(measuring* values) {
 	}
 	values->sensorName = "HTS221";
 	values->value = x;
+}
+
+void SensorTemp::setWire(TwoWire* wire)
+{
+	wireToUse_ = wire;
 }
 
