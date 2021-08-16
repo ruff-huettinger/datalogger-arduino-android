@@ -221,12 +221,14 @@ public class EggBLE : MonoBehaviour
                 {
                     state.hourModes[i] = (MODEOFHOUR)unzip[i];
                 }
+                state.hourModes.CopyTo(state.currentRunningMode, 0);
                 state.hourModes.CopyTo(state.customMode, 0);
             }
             else if (uuid.Equals(intervalUUID))
             {
                 ElectronicEgg.PrintLog("interval :" + bytes[0].ToString());
                 state.interval = (int)bytes[0];
+                state.currentRunningInterval = (int)bytes[0];
             }
         });
     }

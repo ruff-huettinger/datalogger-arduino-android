@@ -13,11 +13,11 @@ public class EggState : MonoBehaviour
     public bool started { get; set; } = false;
     public int interval { get; set; } = 0;
     public MODEOFHOUR[] hourModes { get; set; } = new MODEOFHOUR[24];
+    public MODEOFHOUR[] currentRunningMode { get; set; } = new MODEOFHOUR[24];
     public MODEOFHOUR[] customMode { get; set; } = new MODEOFHOUR[24];
-
+    public int currentRunningInterval { get; set; } = 0;
     public Dictionary<ID, float> sensorValues { get; set; } = new Dictionary<ID, float>();
     public bool present { get; set; } = false;
-
     public DateTime lastRSSITime { get; set; } = new DateTime();
 
 
@@ -75,7 +75,6 @@ public class EggState : MonoBehaviour
                 break;
 
             case (int)TABLE.USERGEN:
-
                 for (int i = 0; i < hourModes.Length; i++)
                 {
                     hourModes[i] = customMode[i];

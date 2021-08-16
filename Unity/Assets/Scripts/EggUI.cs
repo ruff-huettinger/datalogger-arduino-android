@@ -83,8 +83,6 @@ public class EggUI : MonoBehaviour
     /// </summary>
     byte[] defBLEHour = { 10, 15 };
 
-    public MODEOFHOUR[] customMode { get; set; } = new MODEOFHOUR[24];
-
     public GameObject formatWarningPanel;
     public GameObject cancelWarningPanel;
 
@@ -226,13 +224,13 @@ public class EggUI : MonoBehaviour
     {
         if (!started)
         {
-            ShowButton(startedBtn);
             startedBtn.GetComponentInChildren<Text>().text = "Start";
+            ShowButton(startedBtn);
         }
         else
         {
             startedBtn.GetComponentInChildren<Text>().text = "Abbrechen";
-            HideButton(startedBtn);
+            ShowButton(startedBtn);
         }
     }
 
@@ -297,7 +295,7 @@ public class EggUI : MonoBehaviour
         lightDefText = LightText.text;
     }
 
-    public void UpdateToggles(MODEOFHOUR[] hourModes)
+    public void UpdateToggles(MODEOFHOUR[] hourModes, MODEOFHOUR[] runningModes)
     {
         for (int i = 0; i < hourModes.Length; i++)
         {
@@ -318,15 +316,20 @@ public class EggUI : MonoBehaviour
             }
         }
 
-        if (!hourModes.Contains(MODEOFHOUR.BLE))
+        if (!hourModes.Contains(MODEOFHOUR.BLE) || hourModes.SequenceEqual(runningModes))
         {
-            ShowText(BLEWarningText);
+            if (!hourModes.Contains(MODEOFHOUR.BLE))
+            {
+                ShowText(BLEWarningText);
+            }
             SetButtonEnabled(submitBtn, false);
+            ElectronicEgg.PrintLog("im false");
         }
         else
         {
             HideText(BLEWarningText);
             SetButtonEnabled(submitBtn, true);
+            ElectronicEgg.PrintLog("im true");
         }
 
         UpdateTogglesDropdown(hourModes);
@@ -366,43 +369,6 @@ public class EggUI : MonoBehaviour
         myText.text = z.ToString();
     }
 
-    public void FillToggles(int table, MODEOFHOUR[] hourModes)
-    {
-        switch (table)
-        {
-            case (int)TABLE.SENSORONLY:
-                for (int i = 0; i < hourModes.Length; i++)
-                {
-                    hourModes[i] = MODEOFHOUR.OFF;
-                }
-                hourModes[defBLEHour[0]] = MODEOFHOUR.BLE;
-                hourModes[defBLEHour[1]] = MODEOFHOUR.BLE;
-                break;
-
-            case (int)TABLE.AUDIOONLY:
-                for (int i = 0; i < hourModes.Length; i++)
-                {
-                    hourModes[i] = MODEOFHOUR.AUDIO;
-                }
-                hourModes[defBLEHour[0]] = MODEOFHOUR.BLE;
-                hourModes[defBLEHour[1]] = MODEOFHOUR.BLE;
-                break;
-
-            case (int)TABLE.USERGEN:
-
-                for (int i = 0; i < hourModes.Length; i++)
-                {
-                    hourModes[i] = customMode[i];
-                }
-                break;
-
-            default:
-                ElectronicEgg.PrintLog("Default case");
-                break;
-        }
-        UpdateToggles(hourModes);
-    }
-
     void UpdateTogglesDropdown(MODEOFHOUR[] hourModes)
     {
         byte[] sensorReference = new byte[24];
@@ -439,10 +405,5 @@ public class EggUI : MonoBehaviour
         {
             dropModes.SetValueWithoutNotify(2);
         }
-    }
-
-    public void UpdateCustomMode(MODEOFHOUR[] modes)
-    {
-        modes.CopyTo(customMode, 0);
     }
 }

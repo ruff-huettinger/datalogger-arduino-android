@@ -6,9 +6,9 @@ using System.Collections.Generic;
 
 public class ElectronicEgg : MonoBehaviour
 {
-    // toDo: Submit-Button active?
     // toDo: What happens on cancel button click?
     // toDo: add formating of sd card
+    // toDo: implement warning-popups
 
     public EggBLE ble;
     public EggUI ui;
@@ -20,15 +20,12 @@ public class ElectronicEgg : MonoBehaviour
 
     //----Functions
 
-    /// <summary>
-    /// Init
-    /// </summary>
     void Start()
     {
         PrintLog("Start");
         ui.SwitchScreenTo("main");
-        
-        //sets the app to fullscreen with status-bar but without navigation bar
+
+        // sets the app to fullscreen with status-bar but without navigation bar
         ApplicationChrome.SetupAndroidTheme(ApplicationChrome.ToARGB(Color.black), ApplicationChrome.ToARGB(Color.black));
     }
 
@@ -73,14 +70,13 @@ public class ElectronicEgg : MonoBehaviour
                     ui.ShowSensorValues(state.sensorValues);
                     ui.UpdateSliders(state.batteryValue, state.sdFillPercentage);
                     ui.SetStartButton(state.started);
-                    ui.UpdateCustomMode(state.hourModes);
 
                     if (!ui.togglesCreated)
                     {
                         ui.CreateToggles();
                         AddListenersToToggles();
                     }
-                    ui.UpdateToggles(state.hourModes);
+                    ui.UpdateToggles(state.hourModes, state.currentRunningMode);
                     ui.SetIntervalDropdown(state.interval);
                 }
                 break;
@@ -96,10 +92,6 @@ public class ElectronicEgg : MonoBehaviour
         }
         previousState = currentState;
         currentState = nextState;
-    }
-
-    public void OnApplicationPause(bool pause)
-    {
     }
 
     public void OnConnectButton()
@@ -153,11 +145,21 @@ public class ElectronicEgg : MonoBehaviour
         ui.SwitchScreenTo("main");
     }
 
-    public void OnDropdownSelect(Dropdown dropDown)
+    public void OnModesDropChanged(Dropdown dropDown)
     {
-        ElectronicEgg.PrintLog("DROP DOWN CHANGED -> " + dropDown.value);
+        ElectronicEgg.PrintLog("MODES CHANGED -> " + dropDown.value);
         state.UpdateModes(dropDown.value);
-        ui.UpdateToggles(state.hourModes);
+        ui.UpdateToggles(state.hourModes, state.currentRunningMode);
+    }
+
+    public void OnIntervalDropChanged(Dropdown dropDown)
+    {
+        ElectronicEgg.PrintLog("INTERVAL CHANGED -> " + dropDown.value);
+        int selectedInterval = int.Parse(dropDown.options[dropDown.value].text);
+        if (selectedInterval != state.currentRunningInterval)
+        {
+            ui.SetButtonEnabled(ui.submitBtn, true);
+        }
     }
 
 
@@ -165,13 +167,15 @@ public class ElectronicEgg : MonoBehaviour
     {
         ElectronicEgg.PrintLog("Pressed submit btn");
 
-        ui.SetButtonColor(ui.submitBtn, Color.green);
         ui.SetButtonEnabled(ui.submitBtn, false);
+        /*
         this.Invoke(() =>
         {
-            ui.SetButtonEnabled(ui.submitBtn, true);
-            ui.SetButtonColor(ui.submitBtn, Color.white);
         }, 3.0f);
+        */
+        state.hourModes.CopyTo(state.currentRunningMode, 0);
+
+        // Send the modes table
 
         ble.SendModes(state.hourModes);
 
@@ -215,12 +219,6 @@ public class ElectronicEgg : MonoBehaviour
             int z = i;
             ui.modeToggles[z].onValueChanged.AddListener(delegate
             {
-                /*
-                if (state.hourModes[z] != MODEOFHOUR.OFF)
-                {
-                    state.hourModes[z] = MODEOFHOUR.OFF;
-                }
-                else*/
                 if (ui.selectionToggles[0].isOn)
                 {
                     if (state.hourModes[z] != MODEOFHOUR.AUDIO)
@@ -248,7 +246,7 @@ public class ElectronicEgg : MonoBehaviour
                     state.hourModes[z] = MODEOFHOUR.OFF;
                 }
                 state.hourModes.CopyTo(state.customMode, 0);
-                ui.UpdateToggles(state.hourModes);
+                ui.UpdateToggles(state.hourModes, state.currentRunningMode);
             });
         }
     }
