@@ -6,9 +6,7 @@ using System.Collections.Generic;
 
 public class ElectronicEgg : MonoBehaviour
 {
-    // toDo: What happens on cancel button click?
-    // toDo: add formating of sd card
-    // toDo: implement warning-popups
+    // toDo: What exactly happens on cancel button click?
 
     public EggBLE ble;
     public EggUI ui;
@@ -32,7 +30,7 @@ public class ElectronicEgg : MonoBehaviour
     void Update()
     {
         //currentState = APPSTATES.CONNECTED;
-        APPSTATES nextState = currentState;
+        //APPSTATES nextState = currentState;
 
         switch (currentState)
         {
@@ -40,10 +38,10 @@ public class ElectronicEgg : MonoBehaviour
                 if (currentState != previousState)
                 {
                     ble.StartRSSIScan();
-                    ui.SetStatusText("Getrennt");
+                    ui.SetStatusIcon("Getrennt");
                     ui.ChangeStatusButton(true, "Verbinden");
                     ui.HidePanel(ui.functionsPanel);
-                    ui.SetPanelColor(ui.sensorPanel, new Color(0.5f, 0.5f, 0.5f));
+                    ui.ShowSensorOverlay(true);
                     ui.HideButton(ui.refreshBtn);
                     ui.ShowPanel(ui.rssiPanel);
                 }
@@ -56,16 +54,17 @@ public class ElectronicEgg : MonoBehaviour
                     ble.StopRSSIScan();
                     this.Invoke(ble.StartConnection, 0.5f);
                     ui.ChangeStatusButton(false, "Verbinde...");
+                    ui.SetStatusIcon("Verbinde");
                     ui.HidePanel(ui.rssiPanel);
                 }
                 break;
             case APPSTATES.CONNECTED:
                 if (currentState != previousState)
                 {
-                    ui.SetStatusText("Verbunden");
+                    ui.SetStatusIcon("Verbunden");
                     ui.ChangeStatusButton(true, "Trennen");
                     ui.ShowPanel(ui.functionsPanel);
-                    ui.SetPanelColor(ui.sensorPanel, new Color(0.9f, 0.9f, 0.9f));
+                    ui.ShowSensorOverlay(false);
                     ui.ShowButton(ui.refreshBtn);
                     ui.ShowSensorValues(state.sensorValues);
                     ui.UpdateSliders(state.batteryValue, state.sdFillPercentage);
@@ -91,7 +90,7 @@ public class ElectronicEgg : MonoBehaviour
                 break;
         }
         previousState = currentState;
-        currentState = nextState;
+        //currentState = nextState;
     }
 
     public void OnConnectButton()
@@ -190,9 +189,9 @@ public class ElectronicEgg : MonoBehaviour
     public void OnStartButton()
     {
         //PrintError(ui.startedBtn.GetComponentInChildren<Text>().text);
-        if (ui.startedBtn.GetComponentInChildren<Text>().text == "Abbrechen")
+        if (ui.startedBtn.GetComponentInChildren<Text>().text == "Beenden")
         {
-            //ui.OpenPopup(ui.cancelWarningPanel);
+            ui.OpenPopup(ui.cancelWarningPanel);
         }
         else
         {
@@ -203,12 +202,20 @@ public class ElectronicEgg : MonoBehaviour
     public void OnPopupCancelButton()
     {
         ui.ClosePopup(ui.formatWarningPanel);
+        ui.ClosePopup(ui.cancelWarningPanel);
     }
 
     public void OnPopupStartButton()
     {
         ui.ClosePopup(ui.formatWarningPanel);
         ble.SendStartCommand();
+        currentState = APPSTATES.DISCONNECTING;
+    }
+
+    public void OnPopupEndButton()
+    {
+        ui.ClosePopup(ui.cancelWarningPanel);
+        ble.SendEndCommand();
         currentState = APPSTATES.DISCONNECTING;
     }
 

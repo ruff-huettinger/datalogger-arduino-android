@@ -15,6 +15,12 @@ public class EggUI : MonoBehaviour
     public Button startedBtn;
     public Button submitBtn;
 
+    public Image connectedIcon;
+    public Image disconnectedIcon;
+    public Image connectingIcon;
+
+    public Image sensorOverlay;
+
     /// <summary>
     /// The 3d representation of the acc-values
     /// </summary>
@@ -49,6 +55,7 @@ public class EggUI : MonoBehaviour
     public GameObject statusPanel;
     public GameObject sensorPanel;
     public GameObject functionsPanel;
+
     public GameObject rssiPanel;
 
     public Image rssiIcon;
@@ -86,6 +93,8 @@ public class EggUI : MonoBehaviour
     public GameObject formatWarningPanel;
     public GameObject cancelWarningPanel;
 
+    private bool animatedIcon = false;
+    private float animateTime = 0;
 
     void Awake()
     {
@@ -104,7 +113,12 @@ public class EggUI : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        if (animatedIcon && Time.time >= animateTime)
+        {
+            float rotateSpeed = (float)(Math.PI / 10 * 180 / Math.PI);
+            connectingIcon.gameObject.transform.Rotate(0f, 0f, -rotateSpeed);
+            animateTime = Time.time + 0.5f;
+        }
     }
 
     public void SwitchScreenTo(string screenName)
@@ -133,9 +147,10 @@ public class EggUI : MonoBehaviour
         panel.SetActive(false);
     }
 
-    public void SetPanelColor(GameObject panel, Color col)
+
+    public void ShowSensorOverlay(bool v)
     {
-        panel.GetComponent<Image>().color = col;
+        sensorOverlay.enabled = v;
     }
 
     public void OpenPopup(GameObject popup)
@@ -174,6 +189,41 @@ public class EggUI : MonoBehaviour
     public void SetStatusText(string value)
     {
         StatusText.text = value;
+    }
+
+    public void SetStatusIcon(string value)
+    {
+        if (value.Equals("Getrennt"))
+        {
+            disconnectedIcon.gameObject.SetActive(true);
+            connectedIcon.gameObject.SetActive(false);
+            connectingIcon.gameObject.SetActive(false);
+            animatedIcon = false;
+        }
+        else if (value.Equals("Verbunden"))
+        {
+            disconnectedIcon.gameObject.SetActive(false);
+            connectedIcon.gameObject.SetActive(true);
+            connectingIcon.gameObject.SetActive(false);
+            animatedIcon = false;
+        }
+        else if (value.Equals("Verbinde"))
+        {
+            disconnectedIcon.gameObject.SetActive(false);
+            connectedIcon.gameObject.SetActive(false);
+            connectingIcon.gameObject.SetActive(true);
+            animatedIcon = true;
+        }
+    }
+
+    public void animateConnectingIcon()
+    {
+        connectingIcon.gameObject.SetActive(true);
+        animatedIcon = true;
+        for (int i = 0; i < 10; i++)
+        {
+            // connectedIcon.gameObject.transform.Rotate(0f, 0f, rotateSpeed * Time.deltaTime);
+        }
     }
 
     public void UpdateRSSI(float rssiValue, DateTime lastRSSITime)
@@ -229,7 +279,7 @@ public class EggUI : MonoBehaviour
         }
         else
         {
-            startedBtn.GetComponentInChildren<Text>().text = "Abbrechen";
+            startedBtn.GetComponentInChildren<Text>().text = "Beenden";
             ShowButton(startedBtn);
         }
     }
@@ -243,17 +293,17 @@ public class EggUI : MonoBehaviour
     public void ShowSensorValues(Dictionary<ID, float> values)
     {
         float temp = values.TryGetValue(ID.TEMP, out temp) ? temp : -1;
-        TempText.text = tempDefText + " " + temp.ToString("0.00") + "°C";
+        TempText.text = temp.ToString("0.00") + "°C";
 
         float humi = values.TryGetValue(ID.HUMI, out humi) ? humi : -1;
-        HumiText.text = humiDefText + " " + humi.ToString("0.00") + "%";
+        HumiText.text = humi.ToString("0.00") + "%";
 
         float onBoardLight = values.TryGetValue(ID.LIGHT, out onBoardLight) ? onBoardLight : -1;
         float light1 = values.TryGetValue(ID.LIGHTANAONE, out light1) ? light1 : -1;
         float light2 = values.TryGetValue(ID.LIGHTANATWO, out light2) ? light2 : -1;
 
         //LightText.text = lightDefText + " " + onBoardLight.ToString() + " | " + light1.ToString();
-        LightText.text = "Licht: Oben: " + light2.ToString("0") + "%" + " " + "Unten: " + light1.ToString("0") + "%";
+        LightText.text = light2.ToString("0") + "%" + " und " + light1.ToString("0") + "%";
 
         float value;
         if (values.TryGetValue(ID.ACCX, out value)) { }
@@ -322,14 +372,15 @@ public class EggUI : MonoBehaviour
             {
                 ShowText(BLEWarningText);
             }
+            else
+            {
+                HideText(BLEWarningText);
+            }
             SetButtonEnabled(submitBtn, false);
-            ElectronicEgg.PrintLog("im false");
         }
         else
         {
-            HideText(BLEWarningText);
             SetButtonEnabled(submitBtn, true);
-            ElectronicEgg.PrintLog("im true");
         }
 
         UpdateTogglesDropdown(hourModes);

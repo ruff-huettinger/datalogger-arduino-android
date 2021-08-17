@@ -183,6 +183,11 @@ public class EggBLE : MonoBehaviour
         Write(startedUUID, BitConverter.GetBytes(1));
     }
 
+    public void SendEndCommand()
+    {
+        Write(startedUUID, BitConverter.GetBytes(2));
+    }
+
 
     public void RefreshSensors()
     {
@@ -204,7 +209,7 @@ public class EggBLE : MonoBehaviour
                 ElectronicEgg.PrintLog("WrittenBytes Value: " + (System.BitConverter.ToUInt32(bytes, 8)).ToString("0.00"));
 
                 state.batteryValue = System.BitConverter.ToSingle(bytes, 0);
-                state.sdTotalSize = System.BitConverter.ToUInt32(bytes, 4) * 1000;
+                state.sdTotalSize = System.BitConverter.ToUInt32(bytes, 4) * 1000 * 1000; // mb -> bytes
                 state.sdWrittenBytes = System.BitConverter.ToUInt32(bytes, 8);
                 state.sdFillPercentage = state.sdWrittenBytes / state.sdTotalSize;
             }
