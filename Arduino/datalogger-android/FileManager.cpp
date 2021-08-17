@@ -10,8 +10,8 @@ void FileManager::init()
 	#endif // !DEBUG_BOARD
 	}
 
-	folderNumber_ = findFolderNumber();
-	sprintf(folderChar_, "%d", folderNumber_);
+	//folderNumber_ = findFolderNumber();
+	//sprintf(folderChar_, "%d", folderNumber_);
 
 	cardSize = sd.card()->cardSize() * 0.000512;
 
@@ -190,6 +190,9 @@ void FileManager::finalizeWav()
 
 void FileManager::createFolder()
 {
+	folderNumber_ = findFolderNumber();
+	sprintf(folderChar_, "%d", folderNumber_);
+
 	const char* dir = folderChar_;
 	// Create a new folder.
 	if (!sd.exists(dir)) {

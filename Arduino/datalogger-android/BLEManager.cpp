@@ -160,7 +160,6 @@ void BLEManager::onMessage(BLEDevice central, BLECharacteristic characteristic)
 		refreshSensors();
 	}
 
-
 	else if (strcmp(id, startedUUID) == 0) {
 		DEBUG_PRINTLN("Received start cmd");
 		initialized_ = true;

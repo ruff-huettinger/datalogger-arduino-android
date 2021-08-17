@@ -78,8 +78,8 @@ const char ver[] = "Prototyp:2.0 with UnityApp";
 
 
 // toDo: write documentation for changes to ble
-// add onboard-temp sensor
 // add formating again
+// change audio-recorder file lengths -> independent from sensor-interval
 
 
 // override the default main function to remove USB CDC feature
@@ -128,8 +128,8 @@ void setup() {
 	// initialize SD-Card and create a new folder for this run
 
 	fm.init();
-	fm.createFolder();
-	fm.clearSPI();
+	//fm.createFolder();
+	//fm.clearSPI();
 
 	// initialize the audio-recorder callback
 	r.init();
@@ -155,9 +155,11 @@ void setup() {
 #ifdef FORMAT_SD
 	fm.eraseCard();
 	fm.formatCard();
-	fm.clearSPI();
+	//fm.clearSPI();
 #endif // FORMAT_SD
 
+	fm.createFolder();
+	fm.clearSPI();
 
 	DEBUG_PRINTLN("Initialization done");
 }
@@ -231,7 +233,7 @@ void loop() {
 			btThread->start(threadFunctionBLE);
 		}
 		sleepWithLowPower(sensorInterval);
-}
+	}
 }
 
 bool initializedByBLEUser() {
@@ -356,8 +358,8 @@ void recordAudio(char* filename, double timedif) {
 		}
 		r.setBufferEmpty();
 		writingAudioTime = millis();
+		}
 	}
-}
 
 void finishRecording(char* filename) {
 	r.stop();

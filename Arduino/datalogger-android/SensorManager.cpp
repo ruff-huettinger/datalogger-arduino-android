@@ -71,7 +71,12 @@ void SensorManager::getSensorValues(measuring* arr)
 #else
 	SensorTemp hts;
 #endif
+#ifdef DEBUG_BOARD
+	hts.setWire(&Wire1);
+#else
 	hts.setWire(&Wire);
+#endif // DEBUG_BOARD
+
 	hts.init();
 #ifdef USING_HTS_TEMP
 	arr[slotToFill].valueName = "temp";
