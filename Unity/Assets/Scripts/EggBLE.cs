@@ -17,8 +17,6 @@ public class EggBLE : MonoBehaviour
     private const string updateUUID = "f1111a7f-0006-41f9-a127-aedf35a799b3";
     private const string startedUUID = "f1111a7f-0007-41f9-a127-aedf35a799b3";
 
-    public bool initialized { get; private set; } = false;
-
     private string _deviceAddress;
 
     public EggState state;
@@ -195,7 +193,9 @@ public class EggBLE : MonoBehaviour
         Write(updateUUID, data);
     }
 
-
+    /// <summary>
+    /// A specific characterisitcs is read and its value is stored in EggState
+    /// </summary>
     void Read(string uuid)
     {
         ElectronicEgg.PrintLog("Reading: " + uuid);
@@ -238,6 +238,9 @@ public class EggBLE : MonoBehaviour
         });
     }
 
+    /// <summary>
+    /// Writes an array of bytes to a specific characteristic
+    /// </summary>
     public void Write(string uuid, byte[] value)
     {
         BluetoothLEHardwareInterface.WriteCharacteristic(_deviceAddress, serviceUUID, uuid, value, value.Length, true, (characteristicUUID) =>
@@ -268,7 +271,6 @@ public class EggBLE : MonoBehaviour
             byte secondValue = (byte)large[i + 1];
             small[i / 2] = (byte)(firstValue + secondValue * 3);
         }
-
         return small;
     }
 }

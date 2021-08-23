@@ -8,6 +8,9 @@ using System.Linq;
 
 public class EggUI : MonoBehaviour
 {
+    /// <summary>
+    /// Timeout in secs for displaying the egg as unreachable
+    /// </summary>
     private const double RSSI_TIMEOUT_S = 5.0f;
 
     public Button statusBtn;
@@ -22,7 +25,7 @@ public class EggUI : MonoBehaviour
     public Image sensorOverlay;
 
     /// <summary>
-    /// The 3d representation of the acc-values
+    /// 3d-representation of the acc-values
     /// </summary>
     public GameObject eggObj;
     public Quaternion eggOrigRotation;
@@ -34,67 +37,59 @@ public class EggUI : MonoBehaviour
     public Text LightText;
     public Text BLEWarningText;
 
-
-
-    // Default texts for the textfields
-    private string rssiDefText = "RSSI: ";
-    private string humiDefText = "";
-    private string tempDefText = "";
-    private string lightDefText = "";
-
     public Slider batSlider;
     public Slider spaceSlider;
 
     public GameObject mainScreen;
     public GameObject settingsScreen;
     public GameObject popupScreen;
-
     public Dictionary<string, GameObject> screenList = new Dictionary<string, GameObject>();
 
     public GameObject togglePanel;
     public GameObject statusPanel;
     public GameObject sensorPanel;
     public GameObject functionsPanel;
+    public GameObject formatWarningPanel;
+    public GameObject cancelWarningPanel;
 
     public GameObject rssiPanel;
-
     public Image rssiIcon;
-
 
     /// <summary>
     /// Dropdown for selecting the time-interval of sensor-measurings
-    /// <para> Will be synchronized by the connected egg </para>
+    /// <br> Will be synchronized by the connected egg </br>
     /// </summary>
     public Dropdown dropInterval;
 
     /// <summary>
     /// Dropdown for selecting presets of timetables
-    /// <para> Will be synchronized by the connected egg </para>
-    /// <para> Will be overwritten by user if the toggles are changed </para>
+    /// <br> Will be synchronized by the connected egg </br>
+    /// <br> Will be overwritten by user if the toggles are changed </br>
     /// </summary>
     public Dropdown dropModes;
 
-    public Toggle[] modeToggles { get; set; } = new Toggle[24];
+    /// <summary>
+    /// Hour toggles displayed on settings screen
+    /// </summary>
+    public Toggle[] hourToggles { get; set; } = new Toggle[24];
     public GameObject togglePrefab;
     public GameObject txtPrefab;
     public bool togglesCreated { get; set; } = false;
 
     /// <summary>
-    /// A toggle-group for selecting audio or ble
-    /// <para> The selected value will be applied to the toggles </para>
+    /// A toggle-group for selecting audio, ble of off
+    /// <para> The selected value will be applied to the hourToggles OnToggleClick-event </para>
     /// </summary>
     public Toggle[] selectionToggles;
 
     /// <summary>
     /// The default BLE-hours for the table-presets
+    /// <br> - must also be changed in state class </br>
     /// </summary>
     byte[] defBLEHour = { 10, 15 };
 
-    public GameObject formatWarningPanel;
-    public GameObject cancelWarningPanel;
-
     private bool animatedIcon = false;
-    private float animateTime = 0;
+    private float nextAnimateTime = 0;
 
     void Awake()
     {
@@ -103,22 +98,49 @@ public class EggUI : MonoBehaviour
         screenList.Add("popup", popupScreen);
     }
 
-    // Start is called before the first frame update
     void Start()
     {
-        //GetDefaultTexts();
         eggOrigRotation = eggObj.transform.rotation;
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (animatedIcon && Time.time >= animateTime)
+        if (animatedIcon && Time.time >= nextAnimateTime)
         {
-            float rotateSpeed = (float)(Math.PI / 10 * 180 / Math.PI);
-            connectingIcon.gameObject.transform.Rotate(0f, 0f, -rotateSpeed);
-            animateTime = Time.time + 0.5f;
+            //float rotateStep = (float)(Math.PI / 10 * 180 / Math.PI);
+            connectingIcon.gameObject.transform.Rotate(0f, 0f, -360 / 10);
+            nextAnimateTime = Time.time + 0.1f;
         }
+    }
+
+    public void UpdateDisconnected()
+    {
+        SetStatusIcon("Getrennt");
+        ChangeStatusButton(true, "Verbinden");
+        //HidePanel(functionsPanel);
+        ShowSensorOverlay(true);
+        HideButton(refreshBtn);
+        ShowPanel(rssiPanel);
+    }
+
+    public void UpdateConnecting()
+    {
+        ChangeStatusButton(false, "Verbinde...");
+        SetStatusIcon("Verbinde");
+        HidePanel(rssiPanel);
+    }
+
+    public void UpdatedConnected(Dictionary<ID, float> sensorValues, float batteryValue, float sdFillPercentage, bool started)
+    {
+        SetStatusIcon("Verbunden");
+        ChangeStatusButton(true, "Trennen");
+        ShowPanel(functionsPanel);
+        ShowSensorOverlay(false);
+        ShowButton(refreshBtn);
+        ShowSensorValues(sensorValues);
+        UpdateSliders(batteryValue, sdFillPercentage);
+        SetStartButton(started);
     }
 
     public void SwitchScreenTo(string screenName)
@@ -151,6 +173,7 @@ public class EggUI : MonoBehaviour
     public void ShowSensorOverlay(bool v)
     {
         sensorOverlay.enabled = v;
+        sensorOverlay.gameObject.SetActive(v);
     }
 
     public void OpenPopup(GameObject popup)
@@ -179,6 +202,29 @@ public class EggUI : MonoBehaviour
 
     public void SetButtonEnabled(Button btn, bool value)
     {
+        if (value)
+        {
+            btn.GetComponentInChildren<Text>().color = Color.black;
+        }
+        else
+        {
+            btn.GetComponentInChildren<Text>().color = Color.grey;
+        }
+        btn.interactable = value;
+    }
+
+    public void SetButtonPressed(Button btn, bool value)
+    {
+        var colors = btn.colors;
+        if (value)
+        {
+            colors.normalColor = new Color32(50, 50, 50, 255);
+        }
+        else
+        {
+            colors.normalColor = new Color32(255, 255, 255, 255);
+        }
+        btn.colors = colors;
         btn.interactable = value;
     }
 
@@ -186,6 +232,7 @@ public class EggUI : MonoBehaviour
     {
         btn.GetComponent<Image>().color = col;
     }
+
     public void SetStatusText(string value)
     {
         StatusText.text = value;
@@ -220,26 +267,28 @@ public class EggUI : MonoBehaviour
     {
         connectingIcon.gameObject.SetActive(true);
         animatedIcon = true;
-        for (int i = 0; i < 10; i++)
-        {
-            // connectedIcon.gameObject.transform.Rotate(0f, 0f, rotateSpeed * Time.deltaTime);
-        }
     }
 
+    /// <summary>
+    /// Updates the RSSI-connectivity-icon on Disconnected-Screen
+    /// <br> - Crops the icon linear to the current RSSI-value </br>
+    /// <br> - Hides connectButton on RSSI-timeout </br>
+    /// </summary>
     public void UpdateRSSI(float rssiValue, DateTime lastRSSITime)
     {
         TimeSpan difference = DateTime.Now.Subtract(lastRSSITime);
-        //ElectronicEgg.PrintLog(difference.TotalSeconds.ToString());
         if (!(difference.TotalSeconds > RSSI_TIMEOUT_S))
         {
+            SetStatusText("Sensor-Ei: ");
             ShowButton(statusBtn);
             rssiValue = Mathf.Abs(rssiValue);
             rssiIcon.fillAmount = Utility.RemapClamped(rssiValue, 50, 100, 1.0f, 0.17f);
         }
         else
         {
+            SetStatusText("Sensor-Ei: Nicht erreichbar");
             HideButton(statusBtn);
-            rssiIcon.fillAmount = 0.17f;
+            rssiIcon.fillAmount = 0.0f;
         }
     }
 
@@ -253,11 +302,6 @@ public class EggUI : MonoBehaviour
     {
         statusBtn.GetComponentInChildren<Text>().text = text;
         statusBtn.interactable = onoff;
-    }
-
-    public void HideRSSIValue()
-    {
-
     }
 
     public void ShowText(Text t)
@@ -290,6 +334,11 @@ public class EggUI : MonoBehaviour
         dropInterval.value = index;
     }
 
+    /// <summary>
+    /// Displays the sensor-values on UI in sensor-panel:
+    /// <br> - Checks the Dictionary for values </br>
+    /// <br> - Shows the values, if they are available </br>
+    /// </summary>
     public void ShowSensorValues(Dictionary<ID, float> values)
     {
         float temp = values.TryGetValue(ID.TEMP, out temp) ? temp : -1;
@@ -302,7 +351,6 @@ public class EggUI : MonoBehaviour
         float light1 = values.TryGetValue(ID.LIGHTANAONE, out light1) ? light1 : -1;
         float light2 = values.TryGetValue(ID.LIGHTANATWO, out light2) ? light2 : -1;
 
-        //LightText.text = lightDefText + " " + onBoardLight.ToString() + " | " + light1.ToString();
         LightText.text = light2.ToString("0") + "%" + " und " + light1.ToString("0") + "%";
 
         float value;
@@ -312,9 +360,13 @@ public class EggUI : MonoBehaviour
         ShowEggOrientation(values[ID.ACCX], values[ID.ACCY], values[ID.ACCZ]);
     }
 
+    /// <summary>
+    /// Applies the eggs ACC-values (x,y,z) to the textured Egg-3D-model:
+    /// <br> - Uses euler yaws: Roll and Pitch </br>
+    /// <br> - Yaw can only be obtained by using the magnetometer </br>
+    /// </summary>
     private void ShowEggOrientation(float X, float Y, float Z)
     {
-        ElectronicEgg.PrintLog("Setting Egg Pos");
         int sign = 0;
         if (Z > 0)
         {
@@ -326,7 +378,6 @@ public class EggUI : MonoBehaviour
         }
         float miu = 0.001f;
 
-        //float Roll = Mathf.Atan2(Y, Z) * 180 / Mathf.PI;
         float Roll = Mathf.Atan2(Y, sign * Mathf.Sqrt(Z * Z + miu * X * X)) * 180 / Mathf.PI;
         float Pitch = -(Mathf.Atan2(-X, Mathf.Sqrt(Y * Y + Z * Z)) * 180 / Mathf.PI);
 
@@ -338,13 +389,12 @@ public class EggUI : MonoBehaviour
         eggObj.transform.Rotate(0, 0, Roll);
     }
 
-    private void GetDefaultTexts()
-    {
-        humiDefText = HumiText.text;
-        tempDefText = TempText.text;
-        lightDefText = LightText.text;
-    }
-
+    /// <summary>
+    /// Updates the hourToggles' color to:
+    /// <br> - The current state on egg </br>
+    /// <br> - The changes selected by user </br>
+    /// <br> - A preset from the Dropdown-menu </br>
+    /// </summary>
     public void UpdateToggles(MODEOFHOUR[] hourModes, MODEOFHOUR[] runningModes)
     {
         for (int i = 0; i < hourModes.Length; i++)
@@ -352,13 +402,13 @@ public class EggUI : MonoBehaviour
             switch (hourModes[i])
             {
                 case MODEOFHOUR.OFF:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+                    hourToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
                     break;
                 case MODEOFHOUR.AUDIO:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(237, 144, 8, 255);
+                    hourToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(237, 144, 8, 255);
                     break;
                 case MODEOFHOUR.BLE:
-                    modeToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(2, 89, 208, 255);
+                    hourToggles[i].transform.GetChild(0).GetComponent<Image>().color = new Color32(2, 89, 208, 255);
                     break;
                 default:
                     Console.WriteLine("Default case");
@@ -366,26 +416,46 @@ public class EggUI : MonoBehaviour
             }
         }
 
+        UpdateWarningText(hourModes);
+        UpdateSubmitButton(hourModes, runningModes);
+        UpdateTogglesDropdown(hourModes);
+    }
+
+    /// <summary>
+    /// Hides the submit-button if:
+    /// <br> - There are no changes to running state on egg no BLE is selected </br>
+    /// <br> - No BLE is selected </br>
+    /// </summary>
+    private void UpdateSubmitButton(MODEOFHOUR[] hourModes, MODEOFHOUR[] runningModes)
+    {
         if (!hourModes.Contains(MODEOFHOUR.BLE) || hourModes.SequenceEqual(runningModes))
         {
-            if (!hourModes.Contains(MODEOFHOUR.BLE))
-            {
-                ShowText(BLEWarningText);
-            }
-            else
-            {
-                HideText(BLEWarningText);
-            }
             SetButtonEnabled(submitBtn, false);
         }
         else
         {
             SetButtonEnabled(submitBtn, true);
         }
-
-        UpdateTogglesDropdown(hourModes);
     }
 
+    /// <summary>
+    /// Shows a warning text if no BLE-hour is selected
+    /// </summary>
+    private void UpdateWarningText(MODEOFHOUR[] hourModes)
+    {
+        if (!hourModes.Contains(MODEOFHOUR.BLE))
+        {
+            ShowText(BLEWarningText);
+        }
+        else
+        {
+            HideText(BLEWarningText);
+        }
+    }
+
+    /// <summary>
+    /// Creates the hourToggles using a prefab
+    /// </summary>
     public void CreateToggles()
     {
         for (int i = 0; i < 24; i++)
@@ -401,25 +471,29 @@ public class EggUI : MonoBehaviour
             Toggle t = g.GetComponent<Toggle>();
             t.isOn = false;
 
-            modeToggles[i] = t;
+            hourToggles[i] = t;
             ElectronicEgg.PrintLog("Created Toggle: " + i);
         }
         togglesCreated = true;
     }
 
+    /// <summary>
+    /// Adds the hour-texts to the timetable using a prefab
+    /// </summary>
     private void CreateToggleTexts(int z)
     {
         GameObject newGO = (GameObject)Instantiate(txtPrefab);
         newGO.transform.SetParent(togglePanel.GetComponent<RectTransform>(), false);
         newGO.SetActive(true);
-
-        //Vector3 defPos = newGO.transform.localPosition;
-        // newGO.transform.localPosition = new Vector3(defPos.x + 500, defPos.y, defPos.z);
-
         Text myText = newGO.GetComponent<Text>();
         myText.text = z.ToString();
     }
 
+    /// <summary>
+    /// Compares the current timetable to two presets (Sensor-only and Audio)
+    /// <br> - The preset-references must be synchroniced with Arduinos default tables </br>
+    /// <br> - The dropdown menu is updated, if a reference is currently selected </br>
+    /// </summary>
     void UpdateTogglesDropdown(MODEOFHOUR[] hourModes)
     {
         byte[] sensorReference = new byte[24];

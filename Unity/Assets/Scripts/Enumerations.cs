@@ -4,7 +4,7 @@ using UnityEngine;
 
 /// <summary>
 /// Contains the IDs of all possible sensors of the egg 
-/// <para> Used to assign certain values to certain ui-elements</para>
+/// <br> - Used to assign certain values to certain ui-elements</br>
 /// </summary>
 public enum ID
 {
@@ -24,7 +24,7 @@ public enum ID
 
 /// <summary>
 /// Contains the three possible hour-modes 
-/// <para> Same order as in Arduino code (off, audio, ble)</para>
+/// <br> Same order as in Arduino code (off, audio, ble)</br>
 /// </summary>
 public enum MODEOFHOUR
 {
@@ -33,6 +33,10 @@ public enum MODEOFHOUR
     BLE
 };
 
+/// <summary>
+/// The three presets:
+/// <br> - The first two are also defined in Arduino code </br>
+/// </summary>
 enum TABLE
 {
     SENSORONLY,
@@ -40,6 +44,12 @@ enum TABLE
     USERGEN
 };
 
+/// <summary>
+/// The different states of the App:
+/// <br> - UI is updated due to the active state </br>
+/// <br> - BLE actions are triggered by a selected state </br>
+/// <br> - BLE events can cause a change of state </br>
+/// </summary>
 public enum APPSTATES
 {
     DISCONNECTED,

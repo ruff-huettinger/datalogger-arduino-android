@@ -1,3 +1,10 @@
+/*
+	Electronic Egg Unity-app
+
+	Created 23 08 2021
+	By Johannes Brunner
+*/
+
 using UnityEngine;
 using UnityEngine.UI;
 using System;
@@ -7,6 +14,8 @@ using System.Collections.Generic;
 public class ElectronicEgg : MonoBehaviour
 {
     // toDo: What exactly happens on cancel button click?
+    // toDo: Add text in sd-field
+    // toDo: Adjust the dropdowns
 
     public EggBLE ble;
     public EggUI ui;
@@ -24,13 +33,20 @@ public class ElectronicEgg : MonoBehaviour
         ui.SwitchScreenTo("main");
 
         // sets the app to fullscreen with status-bar but without navigation bar
-        ApplicationChrome.SetupAndroidTheme(ApplicationChrome.ToARGB(Color.black), ApplicationChrome.ToARGB(Color.black));
+        Utility.SetupAndroidTheme(Utility.ToARGB(Color.black), Utility.ToARGB(Color.black));
     }
 
+    // --- State machine ---
+
+    /// <summary>
+    /// The main method of the electronic egg app:
+    /// <br> - A state machine is used to trigger functions of BLE and UI </br>
+    /// <br> - The different states are selected by button-clicks and by BLE events </br>
+    /// </summary>
     void Update()
     {
+        // uncomment for simulating connected state
         //currentState = APPSTATES.CONNECTED;
-        //APPSTATES nextState = currentState;
 
         switch (currentState)
         {
@@ -38,12 +54,7 @@ public class ElectronicEgg : MonoBehaviour
                 if (currentState != previousState)
                 {
                     ble.StartRSSIScan();
-                    ui.SetStatusIcon("Getrennt");
-                    ui.ChangeStatusButton(true, "Verbinden");
-                    ui.HidePanel(ui.functionsPanel);
-                    ui.ShowSensorOverlay(true);
-                    ui.HideButton(ui.refreshBtn);
-                    ui.ShowPanel(ui.rssiPanel);
+                    ui.UpdateDisconnected();
                 }
                 ui.UpdateRSSI(state.rssi, state.lastRSSITime);
                 break;
@@ -53,22 +64,14 @@ public class ElectronicEgg : MonoBehaviour
                 {
                     ble.StopRSSIScan();
                     this.Invoke(ble.StartConnection, 0.5f);
-                    ui.ChangeStatusButton(false, "Verbinde...");
-                    ui.SetStatusIcon("Verbinde");
-                    ui.HidePanel(ui.rssiPanel);
+                    ui.UpdateConnecting();
                 }
                 break;
+
             case APPSTATES.CONNECTED:
                 if (currentState != previousState)
                 {
-                    ui.SetStatusIcon("Verbunden");
-                    ui.ChangeStatusButton(true, "Trennen");
-                    ui.ShowPanel(ui.functionsPanel);
-                    ui.ShowSensorOverlay(false);
-                    ui.ShowButton(ui.refreshBtn);
-                    ui.ShowSensorValues(state.sensorValues);
-                    ui.UpdateSliders(state.batteryValue, state.sdFillPercentage);
-                    ui.SetStartButton(state.started);
+                    ui.UpdatedConnected(state.sensorValues, state.batteryValue, state.sdFillPercentage, state.started);
 
                     if (!ui.togglesCreated)
                     {
@@ -79,6 +82,7 @@ public class ElectronicEgg : MonoBehaviour
                     ui.SetIntervalDropdown(state.interval);
                 }
                 break;
+
             case APPSTATES.DISCONNECTING:
                 if (currentState != previousState)
                 {
@@ -86,12 +90,14 @@ public class ElectronicEgg : MonoBehaviour
                     ui.ChangeStatusButton(true, "Trenne...");
                 }
                 break;
+
             default:
                 break;
         }
         previousState = currentState;
-        //currentState = nextState;
     }
+
+    // --- Listeners ---
 
     public void OnConnectButton()
     {
@@ -112,66 +118,30 @@ public class ElectronicEgg : MonoBehaviour
         this.Invoke(() => { ui.SetButtonEnabled(ui.refreshBtn, true); }, 1.0f);
     }
 
-    bool toggleAutoRefresh = false;
-    public void OnAutoRefreshButton()
-    {
-        if (!toggleAutoRefresh)
-        {
-            InvokeRepeating("OnRefreshButton", 0, 0.5F);
-            toggleAutoRefresh = true;
-        }
-        else
-        {
-            CancelInvoke("OnRefreshButton");
-            toggleAutoRefresh = false;
-        }
-    }
-
-    public void OnNewSensorValues()
-    {
-        ui.ShowSensorValues(state.sensorValues);
-    }
-
     public void OnSettingsButton()
     {
         ElectronicEgg.PrintLog("Pressed Settings Button");
         ui.SwitchScreenTo("settings");
     }
 
-
     public void OnBackButton()
     {
         ui.SwitchScreenTo("main");
     }
 
-    public void OnModesDropChanged(Dropdown dropDown)
-    {
-        ElectronicEgg.PrintLog("MODES CHANGED -> " + dropDown.value);
-        state.UpdateModes(dropDown.value);
-        ui.UpdateToggles(state.hourModes, state.currentRunningMode);
-    }
-
-    public void OnIntervalDropChanged(Dropdown dropDown)
-    {
-        ElectronicEgg.PrintLog("INTERVAL CHANGED -> " + dropDown.value);
-        int selectedInterval = int.Parse(dropDown.options[dropDown.value].text);
-        if (selectedInterval != state.currentRunningInterval)
-        {
-            ui.SetButtonEnabled(ui.submitBtn, true);
-        }
-    }
-
-
     public void OnSubmitButton()
     {
         ElectronicEgg.PrintLog("Pressed submit btn");
 
+        ui.SetButtonPressed(ui.submitBtn, true);
         ui.SetButtonEnabled(ui.submitBtn, false);
-        /*
+
         this.Invoke(() =>
         {
-        }, 3.0f);
-        */
+            ui.SetButtonPressed(ui.submitBtn, false);
+            ui.SetButtonEnabled(ui.submitBtn, false);
+        }, 2.0f);
+
         state.hourModes.CopyTo(state.currentRunningMode, 0);
 
         // Send the modes table
@@ -219,12 +189,34 @@ public class ElectronicEgg : MonoBehaviour
         currentState = APPSTATES.DISCONNECTING;
     }
 
+    public void OnNewSensorValues()
+    {
+        ui.ShowSensorValues(state.sensorValues);
+    }
+
+    public void OnModesDropChanged(Dropdown dropDown)
+    {
+        ElectronicEgg.PrintLog("MODES CHANGED -> " + dropDown.value);
+        state.UpdateModes(dropDown.value);
+        ui.UpdateToggles(state.hourModes, state.currentRunningMode);
+    }
+
+    public void OnIntervalDropChanged(Dropdown dropDown)
+    {
+        ElectronicEgg.PrintLog("INTERVAL CHANGED -> " + dropDown.value);
+        int selectedInterval = int.Parse(dropDown.options[dropDown.value].text);
+        if (selectedInterval != state.currentRunningInterval)
+        {
+            ui.SetButtonEnabled(ui.submitBtn, true);
+        }
+    }
+
     public void AddListenersToToggles()
     {
         for (int i = 0; i < 24; i++)
         {
             int z = i;
-            ui.modeToggles[z].onValueChanged.AddListener(delegate
+            ui.hourToggles[z].onValueChanged.AddListener(delegate
             {
                 if (ui.selectionToggles[0].isOn)
                 {
@@ -258,6 +250,7 @@ public class ElectronicEgg : MonoBehaviour
         }
     }
 
+    // --- Debug Prints to android logCat ---
 
 #if DEBUG
     static long logCnt = 0;
