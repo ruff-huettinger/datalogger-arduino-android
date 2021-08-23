@@ -26,7 +26,7 @@
 //#define DEBUG_SERIAL
 
 // Uncomment for using a pure NANO 33 BLE Board without egg
-#define DEBUG_BOARD
+//#define DEBUG_BOARD
 
  // Uncomment for adding memory information to sensor-data
 #define DEBUG_MEMORY
