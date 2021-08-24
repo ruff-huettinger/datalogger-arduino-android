@@ -161,8 +161,19 @@ void BLEManager::onMessage(BLEDevice central, BLECharacteristic characteristic)
 	}
 
 	else if (strcmp(id, startedUUID) == 0) {
-		DEBUG_PRINTLN("Received start cmd");
-		initialized_ = true;
+		byte id = (characteristics[STARTED]->value())[0];
+		DEBUG_PRINT(id);
+		if (id == 1) {
+			DEBUG_PRINTLN("Received start cmd");
+			initialized_ = true;
+		}
+		else if (id == 2) {
+			DEBUG_PRINTLN("Received wdt cmd");
+			NRF_WDT->CONFIG = 0x01;             // Configure WDT to run when CPU is asleep
+			NRF_WDT->CRV = 1 * 32768 + 1;  // set timeout
+			//NRF_WDT->RREN = 0x01;             // Enable the RR[0] reload register
+			NRF_WDT->TASKS_START = 1;
+		}
 	}
 
 	else {
