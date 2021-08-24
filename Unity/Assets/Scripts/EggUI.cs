@@ -36,6 +36,8 @@ public class EggUI : MonoBehaviour
     public Text HumiText;
     public Text LightText;
     public Text BLEWarningText;
+    public Text SDSpaceText;
+    public Text NextBLETimeText;
 
     public Slider batSlider;
     public Slider spaceSlider;
@@ -108,7 +110,6 @@ public class EggUI : MonoBehaviour
     {
         if (animatedIcon && Time.time >= nextAnimateTime)
         {
-            //float rotateStep = (float)(Math.PI / 10 * 180 / Math.PI);
             connectingIcon.gameObject.transform.Rotate(0f, 0f, -360 / 10);
             nextAnimateTime = Time.time + 0.1f;
         }
@@ -120,7 +121,7 @@ public class EggUI : MonoBehaviour
         ChangeStatusButton(true, "Verbinden");
         //HidePanel(functionsPanel);
         ShowSensorOverlay(true);
-        HideButton(refreshBtn);
+        //HideButton(refreshBtn);
         ShowPanel(rssiPanel);
     }
 
@@ -131,7 +132,7 @@ public class EggUI : MonoBehaviour
         HidePanel(rssiPanel);
     }
 
-    public void UpdatedConnected(Dictionary<ID, float> sensorValues, float batteryValue, float sdFillPercentage, bool started)
+    public void UpdatedConnected(Dictionary<ID, float> sensorValues, float batteryValue, float sdFillPercentage, bool started, uint writtenBytes)
     {
         SetStatusIcon("Verbunden");
         ChangeStatusButton(true, "Trennen");
@@ -139,7 +140,7 @@ public class EggUI : MonoBehaviour
         ShowSensorOverlay(false);
         ShowButton(refreshBtn);
         ShowSensorValues(sensorValues);
-        UpdateSliders(batteryValue, sdFillPercentage);
+        UpdateSliders(batteryValue, sdFillPercentage, writtenBytes);
         SetStartButton(started);
     }
 
@@ -215,17 +216,17 @@ public class EggUI : MonoBehaviour
 
     public void SetButtonPressed(Button btn, bool value)
     {
-        var colors = btn.colors;
+        var colors = btn.GetComponent<Image>().color;
         if (value)
         {
-            colors.normalColor = new Color32(50, 50, 50, 255);
+            colors = new Color32(175, 175, 175, 255);
         }
         else
         {
-            colors.normalColor = new Color32(255, 255, 255, 255);
+            colors = new Color32(255, 255, 255, 255);
         }
-        btn.colors = colors;
-        btn.interactable = value;
+        btn.GetComponent<Image>().color = colors;
+        btn.interactable = !value;
     }
 
     public void SetButtonColor(Button btn, Color col)
@@ -292,14 +293,23 @@ public class EggUI : MonoBehaviour
         }
     }
 
-    public void UpdateSliders(float bat, float sd)
+    public void UpdateSliders(float bat, float sd, uint writtenBytes)
     {
         spaceSlider.value = sd;
         batSlider.value = bat;
+        SDSpaceText.text = (writtenBytes / 1000000000.0f).ToString("00.00") + " GB";
     }
 
     public void ChangeStatusButton(bool onoff, string text)
     {
+        if (onoff)
+        {
+            statusBtn.GetComponentInChildren<Text>().color = Color.black;
+        }
+        else
+        {
+            statusBtn.GetComponentInChildren<Text>().color = Color.grey;
+        }
         statusBtn.GetComponentInChildren<Text>().text = text;
         statusBtn.interactable = onoff;
     }
@@ -530,5 +540,13 @@ public class EggUI : MonoBehaviour
         {
             dropModes.SetValueWithoutNotify(2);
         }
+    }
+
+    /// <summary>
+    /// The timespan untill the next BLE hour is displayed in a textfield  
+    /// </summary>
+    public void UpdateBLECountdown(TimeSpan dif)
+    {
+        NextBLETimeText.text = "Nächste Verbindungsmöglichkeit in " + dif.ToString(@"hh\:mm\:ss");
     }
 }

@@ -13,17 +13,20 @@ using System.Collections.Generic;
 
 public class ElectronicEgg : MonoBehaviour
 {
-    // toDo: What exactly happens on cancel button click?
-    // toDo: Add text in sd-field
-    // toDo: Adjust the dropdowns
+    // toDo: Minor Adjustments to dropdowns-ui
+    // toDo: Increase toggles' size
+    // toDo: Update ui.NextBLETimeText to new Screendesign
 
     public EggBLE ble;
     public EggUI ui;
     public EggState state;
+    public EggPersistency pers;
 
     public APPSTATES currentState { get; set; } = APPSTATES.STARTED;
 
     APPSTATES previousState = APPSTATES.STARTED;
+
+    private float nextCountdownTime = 0;
 
     //----Functions
 
@@ -34,6 +37,9 @@ public class ElectronicEgg : MonoBehaviour
 
         // sets the app to fullscreen with status-bar but without navigation bar
         Utility.SetupAndroidTheme(Utility.ToARGB(Color.black), Utility.ToARGB(Color.black));
+
+        // enable Bluetooth Adapter on App start
+        Utility.setAndroidBluetoothEnabled();
     }
 
     // --- State machine ---
@@ -55,8 +61,18 @@ public class ElectronicEgg : MonoBehaviour
                 {
                     ble.StartRSSIScan();
                     ui.UpdateDisconnected();
+                    if (previousState != APPSTATES.STARTED)
+                    {
+                        pers.SaveTimetable(state.currentRunningModes);
+                    }
                 }
                 ui.UpdateRSSI(state.rssi, state.lastRSSITime);
+
+                if (Time.time >= nextCountdownTime)
+                {
+                    ui.UpdateBLECountdown(pers.GetBLETimeDif());
+                    nextCountdownTime = Time.time + 1.0f;
+                }
                 break;
 
             case APPSTATES.CONNECTING:
@@ -71,14 +87,14 @@ public class ElectronicEgg : MonoBehaviour
             case APPSTATES.CONNECTED:
                 if (currentState != previousState)
                 {
-                    ui.UpdatedConnected(state.sensorValues, state.batteryValue, state.sdFillPercentage, state.started);
+                    ui.UpdatedConnected(state.sensorValues, state.batteryValue, state.sdFillPercentage, state.started, state.sdWrittenBytes);
 
                     if (!ui.togglesCreated)
                     {
                         ui.CreateToggles();
                         AddListenersToToggles();
                     }
-                    ui.UpdateToggles(state.hourModes, state.currentRunningMode);
+                    ui.UpdateToggles(state.hourModes, state.currentRunningModes);
                     ui.SetIntervalDropdown(state.interval);
                 }
                 break;
@@ -134,7 +150,6 @@ public class ElectronicEgg : MonoBehaviour
         ElectronicEgg.PrintLog("Pressed submit btn");
 
         ui.SetButtonPressed(ui.submitBtn, true);
-        ui.SetButtonEnabled(ui.submitBtn, false);
 
         this.Invoke(() =>
         {
@@ -142,7 +157,7 @@ public class ElectronicEgg : MonoBehaviour
             ui.SetButtonEnabled(ui.submitBtn, false);
         }, 2.0f);
 
-        state.hourModes.CopyTo(state.currentRunningMode, 0);
+        state.hourModes.CopyTo(state.currentRunningModes, 0);
 
         // Send the modes table
 
@@ -198,7 +213,7 @@ public class ElectronicEgg : MonoBehaviour
     {
         ElectronicEgg.PrintLog("MODES CHANGED -> " + dropDown.value);
         state.UpdateModes(dropDown.value);
-        ui.UpdateToggles(state.hourModes, state.currentRunningMode);
+        ui.UpdateToggles(state.hourModes, state.currentRunningModes);
     }
 
     public void OnIntervalDropChanged(Dropdown dropDown)
@@ -244,8 +259,8 @@ public class ElectronicEgg : MonoBehaviour
                 {
                     state.hourModes[z] = MODEOFHOUR.OFF;
                 }
-                state.hourModes.CopyTo(state.customMode, 0);
-                ui.UpdateToggles(state.hourModes, state.currentRunningMode);
+                state.hourModes.CopyTo(state.customModes, 0);
+                ui.UpdateToggles(state.hourModes, state.currentRunningModes);
             });
         }
     }

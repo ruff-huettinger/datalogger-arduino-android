@@ -65,6 +65,31 @@ public static class Utility
         byte[] b = new byte[] { c.b, c.g, c.r, c.a };
         return System.BitConverter.ToInt32(b, 0);
     }
+
+    // to enable Bluetooth on Android
+    static public void setAndroidBluetoothEnabled()
+    {
+        using (AndroidJavaObject activity = new AndroidJavaClass("com.unity3d.player.UnityPlayer").GetStatic<AndroidJavaObject>("currentActivity"))
+        {
+            try
+            {
+                using (var BluetoothManager = activity.Call<AndroidJavaObject>("getSystemService", "bluetooth"))
+                {
+                    using (var BluetoothAdapter = BluetoothManager.Call<AndroidJavaObject>("getAdapter"))
+                    {
+                        ElectronicEgg.PrintLog("set Bluetooth Enabled");
+                        BluetoothAdapter.Call<bool>("enable");
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                ElectronicEgg.PrintLog("setBluetoothEnabled Exception: " + e);
+            }
+        }
+    }
+
 }
 
 

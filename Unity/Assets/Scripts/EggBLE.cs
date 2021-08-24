@@ -26,6 +26,7 @@ public class EggBLE : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        this.Invoke(() =>
         {
             BluetoothLEHardwareInterface.Initialize(true, false, () =>
             {
@@ -36,6 +37,7 @@ public class EggBLE : MonoBehaviour
                 ElectronicEgg.PrintError("BLE Init Error");
             });
         }
+        , 0.1f);
     }
 
     // Update is called once per frame
@@ -226,8 +228,8 @@ public class EggBLE : MonoBehaviour
                 {
                     state.hourModes[i] = (MODEOFHOUR)unzip[i];
                 }
-                state.hourModes.CopyTo(state.currentRunningMode, 0);
-                state.hourModes.CopyTo(state.customMode, 0);
+                state.hourModes.CopyTo(state.currentRunningModes, 0);
+                state.hourModes.CopyTo(state.customModes, 0);
             }
             else if (uuid.Equals(intervalUUID))
             {

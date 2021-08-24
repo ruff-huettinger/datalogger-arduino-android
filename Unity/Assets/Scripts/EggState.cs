@@ -22,20 +22,29 @@ public class EggState : MonoBehaviour
     public MODEOFHOUR[] hourModes { get; set; } = new MODEOFHOUR[24];
 
     /// <summary>
-    /// The timetable currently running on sensor-egg (at the time of BLE-start on egg) 
+    /// The timetable currently running on sensor-egg refreshed at:
+    /// <br> - time of connecting </br>
+    /// <br> - time of submitting </br>
     /// </summary>
-    public MODEOFHOUR[] currentRunningMode { get; set; } = new MODEOFHOUR[24];
+    public MODEOFHOUR[] currentRunningModes { get; set; } = new MODEOFHOUR[24];
 
     /// <summary>
     /// The timetable designed by user and saved for selecting in dropdown menu
     /// </summary>
-    public MODEOFHOUR[] customMode { get; set; } = new MODEOFHOUR[24];
+    public MODEOFHOUR[] customModes { get; set; } = new MODEOFHOUR[24];
+
+    /// <summary>
+    /// The latest timetable submited to the sensor:
+    /// <br> - used for storing the next BLE-hours  </br>
+    /// </summary>
+    public MODEOFHOUR[] lastSubmitedModes { get; set; } = new MODEOFHOUR[24];
 
     /// <summary>
     /// The default BLE-hours for the table-presets
     /// <br> - must also be changed in UI class </br>
     /// </summary>
     byte[] defBLEHour = { 10, 15 };
+
 
     void Start()
     {
@@ -93,7 +102,7 @@ public class EggState : MonoBehaviour
             case (int)TABLE.USERGEN:
                 for (int i = 0; i < hourModes.Length; i++)
                 {
-                    hourModes[i] = customMode[i];
+                    hourModes[i] = customModes[i];
                 }
                 break;
 
