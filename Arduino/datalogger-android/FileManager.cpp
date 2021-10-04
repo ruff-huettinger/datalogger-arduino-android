@@ -6,18 +6,23 @@ void FileManager::init()
 	if (!sd.begin(SDchipSelect, SD_SCK_MHZ(50))) {
 		DEBUG_PRINTLN("!!!- Unable to access SD card -!!!");
 	#ifndef DEBUG_BOARD
-		showError();
+		//showError();
+		sdInitialized = false;
 	#endif // !DEBUG_BOARD
 	}
-
-	//folderNumber_ = findFolderNumber();
-	//sprintf(folderChar_, "%d", folderNumber_);
+	else {
+		sdInitialized = true;
+	}
 
 	cardSize = sd.card()->cardSize() * 0.000512;
 
 	csd_t m_csd;
 	!sd.card()->readCSD(&m_csd);
 	cardSize = 0.000512 * sdCardCapacity(&m_csd);
+
+	cid_t m_cid;
+	sd.card()->readCID(&m_cid);
+	manufacturerID = int(m_cid.mid);
 }
 
 uint16_t FileManager::findFolderNumber()
@@ -218,6 +223,19 @@ void FileManager::leaveFolder()
 	}
 }
 
+byte FileManager::checkSDIntegrity()
+{
+	if (!sdInitialized) {
+		return 2; // Error on SD Init
+	}
+
+	if (cardSize != 32010 || manufacturerID != 27) {
+		return 3; // Not a original SD
+	}
+
+	return 0; // SD is genuine Samsung Pro
+}
+
 uint8_t FileManager::getOpenState()
 {
 	return fileOpened_;
@@ -243,6 +261,10 @@ void FileManager::showError()
 		digitalWrite(LED_RED, LOW);    // turn the LED off by making the voltage LOW
 		delay(1000);                       // wait for a second
 	}
+}
+void FileManager::getCardSectorCount()
+{
+	cardSectorCount = sd.card()->sectorCount();
 }
 void FileManager::eraseCard() {
 	uint32_t firstBlock = 0;

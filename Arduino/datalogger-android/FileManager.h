@@ -40,6 +40,9 @@ private:
 	uint32_t cardSectorCount = 0;
 	uint8_t  sectorBuffer[512];
 
+	uint8_t sdInitialized = false;
+	uint16_t manufacturerID = 0;
+
 public:
 
 	// initialize SD-card, better called only once
@@ -81,7 +84,11 @@ public:
 
 	void leaveFolder();
 
-	// activte check
+	// integrity check
+
+	byte checkSDIntegrity();
+
+	// active check
 
 	uint8_t getOpenState();
 
@@ -92,9 +99,15 @@ public:
 	// error function
 	void showError();
 
+	// format functions:
+
+	void getCardSectorCount();
+
 	void eraseCard();
 
 	void formatCard();
+
+
 
 	uint32_t getCardSize();
 

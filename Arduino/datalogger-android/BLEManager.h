@@ -3,6 +3,7 @@
 #include <ArduinoBLE.h>
 #include "config.h"
 #include "SensorManager.h"
+#include "FileManager.h"
 
 
 /**
@@ -88,6 +89,8 @@ private:
 	static void modeToBLE(byte* large, byte* small);
 	static void bleToMode(byte* large, byte* small);
 
+	FileManager* fm;
+
 public:
 	void init();
 	void begin(measuring* currentSensorValues, uint8_t dataLength, float batteryPercentage, uint32_t cardSize = 0, uint32_t freeSDSpace = 0);
@@ -105,6 +108,8 @@ public:
 	void updateTable();
 	byte* getUpdatedTable();
 	byte getUpdatedInterval();
+
+	void setFileManager(FileManager* fmNew);
 
 
 	BLEManager() {};

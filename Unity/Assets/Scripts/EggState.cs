@@ -11,6 +11,8 @@ public class EggState : MonoBehaviour
     public float batteryValue { get; set; } = 0.0f;
     public float sdFillPercentage { get; set; } = 0.0f;
     public bool started { get; set; } = false;
+    public bool sdInitialized { get; set; } = false;
+    public bool genuineSD { get; set; } = false;
     public int interval { get; set; } = 0;
     public int currentRunningInterval { get; set; } = 0;
     public Dictionary<ID, float> sensorValues { get; set; } = new Dictionary<ID, float>();

@@ -44,6 +44,10 @@ void BLEManager::begin(measuring* currentSensorValues, uint8_t dataLength, float
 	updateModesValue();
 
 	byte startedValue[1] = { isStarted() };
+
+	if (!isStarted()) {
+		startedValue[0] = fm->checkSDIntegrity();
+	}
 	characteristics[STARTED]->setValue(startedValue, 1);
 
 	DEBUG_PRINTLN(("Bluetooth device active, waiting for connections..."));
@@ -237,6 +241,11 @@ byte* BLEManager::getUpdatedTable()
 
 byte BLEManager::getUpdatedInterval() {
 	return updatedInterval;
+}
+
+void BLEManager::setFileManager(FileManager* fmNew)
+{
+	fm = fmNew;
 }
 
 

@@ -38,6 +38,7 @@ public class EggUI : MonoBehaviour
     public Text BLEWarningText;
     public Text SDSpaceText;
     public Text NextBLETimeText;
+    public Text SDProblemWarningText;
 
     public Slider batSlider;
     public Slider spaceSlider;
@@ -132,7 +133,7 @@ public class EggUI : MonoBehaviour
         HidePanel(rssiPanel);
     }
 
-    public void UpdatedConnected(Dictionary<ID, float> sensorValues, float batteryValue, float sdFillPercentage, bool started, uint writtenBytes)
+    public void UpdatedConnected(Dictionary<ID, float> sensorValues, float batteryValue, float sdFillPercentage, bool started, uint writtenBytes, bool sdInitialized, bool genuineSD)
     {
         SetStatusIcon("Verbunden");
         ChangeStatusButton(true, "Trennen");
@@ -142,6 +143,7 @@ public class EggUI : MonoBehaviour
         ShowSensorValues(sensorValues);
         UpdateSliders(batteryValue, sdFillPercentage, writtenBytes);
         SetStartButton(started);
+        SetSDWarningText(sdInitialized, genuineSD);
     }
 
     public void SwitchScreenTo(string screenName)
@@ -335,6 +337,32 @@ public class EggUI : MonoBehaviour
         {
             startedBtn.GetComponentInChildren<Text>().text = "Beenden";
             ShowButton(startedBtn);
+        }
+    }
+
+    public void SetSDWarningText(bool sdInitialized, bool genuineSD)
+    {
+        if (!(sdInitialized && genuineSD))
+        {
+            ShowText(SDProblemWarningText);
+
+            if (!sdInitialized)
+            {
+                SDProblemWarningText.text = "Keine SD-Karte gefunden!";
+                SDProblemWarningText.color = Color.red;
+                SetButtonEnabled(startedBtn, false);
+            }
+            else if (!genuineSD)
+            {
+                SDProblemWarningText.text = "Es wurde keine originale SD-Karte eingelegt!";
+                SDProblemWarningText.color = Color.black;
+                SetButtonEnabled(startedBtn, true);
+            }
+        }
+        else
+        {
+            HideText(SDProblemWarningText);
+            SetButtonEnabled(startedBtn, true);
         }
     }
 

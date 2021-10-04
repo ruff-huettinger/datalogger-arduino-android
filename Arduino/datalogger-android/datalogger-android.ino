@@ -133,6 +133,7 @@ void setup() {
 
 	// initialize BLE services
 	bm.init();
+	bm.setFileManager(&fm);
 
 	sensorDataLength = sm.getDataLength();
 	sensorData = new measuring[sensorDataLength];
@@ -150,6 +151,7 @@ void setup() {
 #endif // !MANUAL_START_TIME
 
 #ifdef FORMAT_SD
+	fm.getCardSectorCount();
 	fm.eraseCard();
 	fm.formatCard();
 #endif // FORMAT_SD
@@ -227,9 +229,9 @@ void loop() {
 			delete btThread;
 			btThread = new Thread();
 			btThread->start(threadFunctionBLE);
-	}
+		}
 		sleepWithLowPower(sensorInterval);
-}
+	}
 }
 
 bool initializedByBLEUser() {

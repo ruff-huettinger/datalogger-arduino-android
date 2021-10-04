@@ -215,12 +215,36 @@ public class EggBLE : MonoBehaviour
                 state.sdWrittenBytes = System.BitConverter.ToUInt32(bytes, 8);
                 state.sdFillPercentage = state.sdWrittenBytes / state.sdTotalSize;
             }
+
             else if (uuid.Equals(startedUUID))
             {
-                ElectronicEgg.PrintLog("Started Value: " + (System.BitConverter.ToBoolean(bytes, 0)).ToString());
-                state.started = System.BitConverter.ToBoolean(bytes, 0);
+                if (bytes[0] == 0)
+                {
+                    state.started = false;
+                    state.sdInitialized = true;
+                    state.genuineSD = true;
+                }
+                else if (bytes[0] == 1)
+                {
+                    state.started = true;
+                    state.sdInitialized = true;
+                    state.genuineSD = true;
+                }
+                else if (bytes[0] == 2)
+                {
+                    state.started = false;
+                    state.sdInitialized = false;
+                    state.genuineSD = true;
+                }
 
+                else if (bytes[0] == 3)
+                {
+                    state.started = false;
+                    state.sdInitialized = true;
+                    state.genuineSD = false;
+                }
             }
+
             else if (uuid.Equals(modesUUID))
             {
                 byte[] unzip = bleToMode(bytes);

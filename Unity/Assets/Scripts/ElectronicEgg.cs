@@ -87,7 +87,7 @@ public class ElectronicEgg : MonoBehaviour
             case APPSTATES.CONNECTED:
                 if (currentState != previousState)
                 {
-                    ui.UpdatedConnected(state.sensorValues, state.batteryValue, state.sdFillPercentage, state.started, state.sdWrittenBytes);
+                    ui.UpdatedConnected(state.sensorValues, state.batteryValue, state.sdFillPercentage, state.started, state.sdWrittenBytes, state.sdInitialized, state.genuineSD);
 
                     if (!ui.togglesCreated)
                     {
