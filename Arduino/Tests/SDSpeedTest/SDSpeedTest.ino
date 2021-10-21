@@ -5,11 +5,12 @@
 #define FILE_SIZE 1024UL*512UL
 #include <SPI.h>
 
+
 // use next line to test SD.h
 //#include <SD.h>
 
 // use next two lines to test SdFat
-#include "SdFat.h"
+#include "SdFat_2_1.h"
 SdFat SD;
 
 uint8_t buf[512];
@@ -36,7 +37,7 @@ void setup() {
 
 
   Serial.println("begin free space test");
-  ShowFreeSpace();
+  //ShowFreeSpace();
 
 
   for (size_t n = 1; n <= 512; n *= 2) {
@@ -71,6 +72,7 @@ void loop() {
   // nothing happens after setup
 }
 
+/*
 void ShowFreeSpace() {
     // Calculate free space (volume free clusters * blocks per clusters / 2)
     long lFreeKB = SD.vol()->freeClusterCount();
@@ -81,3 +83,4 @@ void ShowFreeSpace() {
     Serial.print(lFreeKB);
     Serial.println(" KB");
 }
+*/

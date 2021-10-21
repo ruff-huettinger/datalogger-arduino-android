@@ -1,31 +1,40 @@
 /*
-  MicrophoneNoiseTest
+  MicrophoneContinousTest
 
-  - A test to record 16bit-Audio with higher sampling frequency buffered on a sd-card
-  - Record the same buffer in 8bit quality
+  - A test to record continously to sd card choosing different settings
 
   The circuit:
   * Board: Arduino Nano 33 BLE Sense
   * Micro-SD card connected via SPI and CS on pin 10
 
-  Created 05 10 2021
+  Created 21 10 2021
   By Johannes Brunner
 
 */
 
 #include "PDMUpdate.h"
 #include <SPI.h>
-#include "SdFat.h"
+#include "SdFat_2_1.h"
 
+#define DISABLE_PRINT 0
 
-const uint32_t MY_BUFFER_SIZE = 98304;
+#ifndef DISABLE_PRINT
+// disable Serial output
+#define Serial SomeOtherwiseUnusedName
+static class {
+public:
+	void begin(...) {}
+	void print(...) {}
+	void println(...) {}
+} Serial;
+#endif
 
-const uint16_t PDM_BUFFER_SIZE = 1024;
+const uint32_t MY_BUFFER_SIZE = 8192;
 
-const uint16_t NUM_OF_RUNS = 3;
+const uint32_t NUM_OF_RUNS = 10;
 
 // use 16000 31250 41667 -> best results with 31250
-const uint16_t SAMPLE_RATE = 31250;
+const uint16_t SAMPLE_RATE = 41667;
 
 const uint8_t BIT_DEPTH = 16;
 
@@ -50,10 +59,7 @@ struct wavStruct
 	uint32_t subChunk2Size = 0; //== NumSamples * NumChannels * BitsPerSample/8
 };
 
-
-// buffer to read samples into, each sample is 16-bits
 short myBuffer[MY_BUFFER_SIZE];
-uint32_t bufferOffset = 0;
 volatile bool bufferFullFlag = false;
 int bytesAvailable = 0;
 int numOfRunsCount = 0;
@@ -63,9 +69,13 @@ const int chipSelect = 10;
 SdFat SD;
 File uFile;
 
-// toDo: - noise reduction -> does not work, too much noise on signal
-//		 - dither test (using sox) -> try different dither algorithms
-//       - increase spi speed
+// just for logging times
+long lastBufferFullTime = 0;
+long lastBufferSaveTime = 0;
+
+
+// toDo: test repeating SD-card noise with egg
+// toDo: adjust gain of egg
 
 void setup()
 {
@@ -80,7 +90,7 @@ void setup()
 	PDM.setGain(GAIN);
 
 	// set Buffer to double size of samples buffer for lib's double buffering
-	//PDM.setBufferSize(BUFFER_SIZE * 2);
+	PDM.setBufferSize(MY_BUFFER_SIZE * 2);
 
 	if (!PDM.begin(NUM_OF_CHANNELS, SAMPLE_RATE))
 	{
@@ -108,24 +118,28 @@ void setup()
 	Serial.println("initialization done.");
 
 	selectFolder();
+
+	uFile = SD.open("realtimetest.wav", FILE_WRITE);
 }
 
 void loop()
 {
 	if (bufferFullFlag) {
-		Serial.println("buffer is full");
-		saveMyBufferOnSD(16, 0);
-		saveMyBufferOnSD(8, 0);
-		saveMyBufferOnSD(8, 1);
-		saveMyBufferOnSD(8, 5);
-
-		bufferOffset = 0;
+		Serial.print("Buffer full @: ");
+		Serial.println(lastBufferFullTime);
 		bufferFullFlag = false;
+		saveMyBufferOnSD(16, 0);
+		//printMyBuffer();
+
+		Serial.print("Buffer saved @: ");
+		Serial.println(lastBufferSaveTime);
 		numOfRunsCount++;
 	}
 
 	if (numOfRunsCount == NUM_OF_RUNS) {
+		finalizeWav();
 		uFile.close();
+		digitalWrite(LED_PWR, LOW);
 		Serial.print("finished");
 		while (true);
 	}
@@ -133,22 +147,9 @@ void loop()
 
 
 void saveMyBufferOnSD(int bitdeph, int noiseGate) {
-	char name[16];
-	sprintf(name, "%d_%d.wav", bitdeph, noiseGate);
-	Serial.println(name);
-
-	uFile = SD.open(name, FILE_WRITE);
 
 	if (numOfRunsCount == 0) {
 		writeWavHeader(bitdeph);
-	}
-
-	if (!uFile)
-	{
-		Serial.print("Failed to open file");
-		while (true)
-			;
-		return;
 	}
 
 	if (bitdeph == 16) {
@@ -156,6 +157,9 @@ void saveMyBufferOnSD(int bitdeph, int noiseGate) {
 		{
 			uFile.write((lowByte(myBuffer[i])));
 			uFile.write((highByte(myBuffer[i])));
+			//Serial.print(i);
+			//Serial.print(": ");
+			//Serial.println(myBuffer[i]);
 		}
 	}
 	else if (bitdeph == 8) {
@@ -170,11 +174,15 @@ void saveMyBufferOnSD(int bitdeph, int noiseGate) {
 		}
 	}
 
-	if (numOfRunsCount == NUM_OF_RUNS - 1) {
-		finalizeWav();
+	lastBufferSaveTime = micros();
+}
+
+void printMyBuffer() {
+	for (int i = 0; i < MY_BUFFER_SIZE; i++) {
+		Serial.print(i);
+		Serial.print(": ");
+		Serial.println(myBuffer[i]);
 	}
-	uFile.close();
-	Serial.println("buffer was saved");
 }
 
 
@@ -183,19 +191,12 @@ void onPDMdata()
 	// query the number of bytes available
 	bytesAvailable = PDM.available();
 
-	if ((bufferOffset + bytesAvailable) < MY_BUFFER_SIZE) {
-		// read into the my buffer
-		PDM.read(&myBuffer[bufferOffset], bytesAvailable);
-		bufferOffset += (bytesAvailable / 2);
-	}
-	else {
-		bufferFullFlag = true;
+	//PDM.read(&myBuffer[0], bytesAvailable);
+	PDM.read(myBuffer, bytesAvailable);
 
-		// read the data but dont use it
-		bytesAvailable = PDM.available();
-		int throwAwayBuffer[PDM_BUFFER_SIZE];
-		PDM.read(&throwAwayBuffer[0], bytesAvailable);
-	}
+	bufferFullFlag = true;
+
+	lastBufferFullTime = micros();
 }
 
 void selectFolder()
@@ -266,29 +267,3 @@ void finalizeWav()
 	data[3] = fSize >> 24;
 	uFile.write((byte*)data, 4);
 }
-
-
-/*
-void saveTheOldWay(const char* name) {
-	uFile = SD.open(name, FILE_WRITE);
-
-	if (!uFile)
-	{
-		Serial.print("Failed to open file");
-		while (true)
-			;
-		return;
-	}
-
-	for (int i = 0; i < MY_BUFFER_SIZE; i++) {
-
-		constrain(myBuffer[i], -127, 127);
-		// transform from int8 to uint8
-		myBuffer[i] += 128;
-		uFile.write(((myBuffer[i]) & 0xff));
-	}
-
-	uFile.close();
-	Serial.println("buffer was saved the old way");
-}
-*/
