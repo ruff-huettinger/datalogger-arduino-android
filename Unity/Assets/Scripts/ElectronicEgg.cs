@@ -13,6 +13,8 @@ using System.Collections.Generic;
 
 public class ElectronicEgg : MonoBehaviour
 {
+    // toDo: warning if location service is disabled
+    // toDo: Preselect one of the hour toggles (i.e. ble-toggle)
     // toDo: Minor Adjustments to dropdowns-ui
     // toDo: Increase toggles' size
     // toDo: Update ui.NextBLETimeText to new Screendesign
@@ -61,10 +63,7 @@ public class ElectronicEgg : MonoBehaviour
                 {
                     ble.StartRSSIScan();
                     ui.UpdateDisconnected();
-                    if (previousState != APPSTATES.STARTED)
-                    {
-                        pers.SaveTimetable(state.currentRunningModes);
-                    }
+                    pers.SaveTimetable(state.currentRunningModes);
                 }
                 ui.UpdateRSSI(state.rssi, state.lastRSSITime);
 
@@ -130,8 +129,8 @@ public class ElectronicEgg : MonoBehaviour
     public void OnRefreshButton()
     {
         ble.RefreshSensors();
-        ui.SetButtonEnabled(ui.refreshBtn, false);
-        this.Invoke(() => { ui.SetButtonEnabled(ui.refreshBtn, true); }, 1.0f);
+        ui.SetButtonIconEnabled(ui.refreshBtn, false);
+        this.Invoke(() => { ui.SetButtonIconEnabled(ui.refreshBtn, true); }, 1.0f);
     }
 
     public void OnSettingsButton()

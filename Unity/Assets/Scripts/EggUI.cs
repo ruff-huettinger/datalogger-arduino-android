@@ -216,6 +216,19 @@ public class EggUI : MonoBehaviour
         btn.interactable = value;
     }
 
+    public void SetButtonIconEnabled(Button btn, bool value)
+    {
+        if (value)
+        {
+            btn.GetComponent<Image>().color = Color.white;
+        }
+        else
+        {
+            btn.GetComponent<Image>().color = Color.gray;
+        }
+        btn.interactable = value;
+    }
+
     public void SetButtonPressed(Button btn, bool value)
     {
         var colors = btn.GetComponent<Image>().color;
@@ -575,6 +588,13 @@ public class EggUI : MonoBehaviour
     /// </summary>
     public void UpdateBLECountdown(TimeSpan dif)
     {
-        NextBLETimeText.text = "Nächste Verbindungsmöglichkeit in " + dif.ToString(@"hh\:mm\:ss");
+        if (dif.Hours > 1)
+        {
+            NextBLETimeText.text = "Nächste Verbindungsmöglichkeit in " + dif.ToString(@"hh\:mm\:ss");
+        }
+        else
+        {
+            NextBLETimeText.text = "Verbindung noch für " + dif.ToString(@"mm\:ss") + " min möglich";
+        }
     }
 }
