@@ -32,7 +32,8 @@
 #include <SPI.h>
 #include <Wire.h>
 #include "ArduinoBLE.h"
-#include "SdFat.h"
+//#include "SdFat.h"
+#include "SdFat_2_1.h"
 #include "ArduinoPDM.h"
 #include "Arduino_APDS9960.h"
 #include "SparkFunLSM9DS1.h"
@@ -77,8 +78,9 @@ const char projectName[] = "S-10926-Elektronisches Ei";
 const char ver[] = "Prototyp:2.0 with UnityApp";
 
 
-// toDo: write documentation for changes to ble
+// !!! toDo: check cardsize after upgrade to sdfat 2.1 <- looks good
 // toDo: change audio-recorder file lengths -> independent from sensor-interval
+// toDo: write documentation for changes to ble
 
 
 // override the default main function to remove USB CDC feature
@@ -345,12 +347,6 @@ void recordAudio(char* filename, double timedif) {
 		}
 	#endif // DEBUG_SERIAL
 		int16_t* sampleBuffer = r.getRecordedSamples();
-		// convert to 8-bit signed audio 
-		for (int i = 0; i < BUFFER_SIZE; i++) {
-			constrain(sampleBuffer[i], -127, 127);
-			// transform from int8 to uint8
-			sampleBuffer[i] += 128;
-		}
 		if ((millis() - timeBefStart) > AUDIO_FILE_WRITE_DELAY_MS) {
 			fm.writeAudioData(sampleBuffer);
 		}

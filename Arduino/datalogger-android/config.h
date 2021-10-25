@@ -111,18 +111,18 @@ typedef struct measuring {
 // Audio:
 
 // skip first recordings until the mic-electronic is initialized
-const static uint32_t AUDIO_FILE_WRITE_DELAY_MS = 1000;
+const static uint32_t AUDIO_FILE_WRITE_DELAY_MS = 2000;
 
 // use a higher GAIN if records are to quiet
 // use a lower gain if records overmodulate
-const static uint8_t GAIN = 30;
+const static uint8_t GAIN = 80;
 
 // Keep these settings for 15kHz/8bit Audio
-const static uint16_t BUFFER_SIZE = 1024;
+const static uint16_t BUFFER_SIZE = 256;
 
-const static uint32_t SAMPLE_RATE = 31250;
+const static uint32_t SAMPLE_RATE = 41667;
 
-const static uint8_t BIT_DEPTH = 8;
+const static uint8_t BIT_DEPTH = 16;
 
 const static uint8_t NUM_OF_CHANNELS = 1;
 

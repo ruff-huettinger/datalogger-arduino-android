@@ -1,5 +1,5 @@
-uint8_t ENABLE_PIN = 5;
-uint8_t READ_PIN = 15;
+uint8_t ENABLE_PIN = 6;
+uint8_t READ_PIN = 21;
 
 
 void setup() {

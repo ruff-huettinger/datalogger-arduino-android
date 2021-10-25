@@ -2,7 +2,7 @@
 
 #include "config.h"
 #include <SPI.h>
-#include "SdFat.h"
+#include "SdFat_2_1.h"
 
 /**
  * @file FileManager.h

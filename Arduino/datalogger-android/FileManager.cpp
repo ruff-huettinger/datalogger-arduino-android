@@ -14,8 +14,6 @@ void FileManager::init()
 		sdInitialized = true;
 	}
 
-	cardSize = sd.card()->cardSize() * 0.000512;
-
 	csd_t m_csd;
 	!sd.card()->readCSD(&m_csd);
 	cardSize = 0.000512 * sdCardCapacity(&m_csd);
@@ -81,14 +79,17 @@ void FileManager::writeAudioData(int16_t* audioData)
 {
 	for (int i = 0; i < BUFFER_SIZE; i++) {
 		if (BIT_DEPTH == 8) {
-			//DEBUG_PRINT(i);
-			//DEBUG_PRINT(": ");
-			//DEBUG_PRINTLN(((*audioData[i]) & 0xff));
-			file.write(((audioData[i]) & 0xff));
+
+			// write 8-bit signed audio 
+
+			uint16_t* unsignedData = (uint16_t*)(audioData[i] + 32767);
+			file.write(*unsignedData >> 8);
 			writtenBytes++;
 		}
 		else {
-			file.write(audioData[i]);
+			//file.write(audioData[i]);
+			file.write(lowByte(audioData[i]));
+			file.write(highByte(audioData[i]));
 		}
 	}
 }
@@ -166,8 +167,8 @@ void FileManager::writeSensorsLine(measuring* data, uint8_t dataLength, char tim
 void FileManager::writeWavHeader(double recordingTime)
 {
 	wavStruct wavHeader;
-	wavHeader.chunkSize = (wavHeader.sampleRate * (recordingTime / 1000)) + 36;
-	wavHeader.subChunk2Size = (wavHeader.sampleRate * (recordingTime / 1000));
+	wavHeader.chunkSize = wavHeader.sampleRate * (recordingTime / 1000) * (BIT_DEPTH / 8) + 36;
+	wavHeader.subChunk2Size = wavHeader.sampleRate * (recordingTime / 1000) * (BIT_DEPTH / 8);
 
 	file.seek(0);
 	if (!file.write((byte*)&wavHeader, 44) > 0)

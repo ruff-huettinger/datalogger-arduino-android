@@ -61,8 +61,8 @@ uint16_t PowerManager::getAnalogAvg()
 float PowerManager::getBatteryFraction()
 {
 	uint16_t avg = getAnalogAvg();
-	uint8_t avgPercent = map(avg, MIN_ANALOG_READ, MAX_ANALOG_READ, 0, 100);
-	return (constrain(((float)avgPercent / 100), 0.0f, 1.0f));
+	float avgInBounds = (float)constrain(avg, MIN_ANALOG_READ, MAX_ANALOG_READ);
+	return mapfloat(avgInBounds, (float)MIN_ANALOG_READ, (float)MAX_ANALOG_READ, 0.0f, 1.0f);
 }
 
 void PowerManager::disableCurrentConsumers()
@@ -118,6 +118,11 @@ void PowerManager::resetLFCLK()
 	disableLFCLK();
 	swapLFCLKSource();
 	enableLFCLK();
+}
+
+float PowerManager::mapfloat(float x, float in_min, float in_max, float out_min, float out_max)
+{
+	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
 /*
