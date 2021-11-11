@@ -31,8 +31,25 @@
   This example code is in the public domain.
 */
 
+#if (MBED_VERSION > MBED_ENCODE_VERSION(6, 2, 0))
+#define BLE_NAMESPACE ble 
+#else
+#define BLE_NAMESPACE ble::vendor::cordio
+#endif
+
+
 #include <ArduinoBLE.h>
 #include "MemoryFree.h"
+//#include "mbed.h"
+//#include "BLE.h"
+
+#include <driver/CordioHCIDriver.h>
+
+
+
+/*------------------------*/
+
+using namespace mbed;       // Enable us to call mbed functions without "mbed::"
 
 BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // create service
 
@@ -41,6 +58,10 @@ BLEByteCharacteristic switchCharacteristic("19B10001-E8F2-537E-4F6C-D104768A1214
 
 const int ledPin = LED_BUILTIN; // pin to use for the LED
 
+//extern BLE_NAMESPACE::CordioHCIDriver& ble_cordio_get_hci_driver();
+//extern BLE_NAMESPACE::CordioHCIDriver& x;
+
+BLELocalDevice peripheral;
 
 
 void setup() {
@@ -48,10 +69,10 @@ void setup() {
 	while (!Serial);
 
 	pinMode(ledPin, OUTPUT); // use the LED pin as an output
+
 }
 
 void loop() {
-	BLELocalDevice peripheral;
 	//peripheral.debug(Serial);
 	// poll for BLE events
 	Serial.println(freeMemory());
@@ -59,6 +80,10 @@ void loop() {
 		Serial.println("starting BLE failed!");
 		while (1);
 	}
+
+	beaconTest();
+
+	/*
 	peripheral.advertise();
 	long starttime = millis();
 	while (millis() < starttime + 1000) {
@@ -68,6 +93,7 @@ void loop() {
 	//BLE.stopAdvertise();
 	peripheral.end();
 	delay(50);
+	*/
 }
 
 
@@ -97,4 +123,39 @@ void switchCharacteristicWritten(BLEDevice central, BLECharacteristic characteri
 		BLE.end();
 		delay(1000000000);
 	}
+}
+
+void beaconTest() {
+	char* uuidByte = "c336aa38054bb0483b0ae75027061982";
+	int _major = 1;
+	int _minor = 1;
+	int _tx = 127;
+
+	byte data[25] = {
+	0X4C,0x00, //setting for iBeacons
+	0x02,0x15,
+	uuidByte[0],
+	uuidByte[1],
+	uuidByte[2],
+	uuidByte[3],
+	uuidByte[4],
+	uuidByte[5],
+	uuidByte[6],
+	uuidByte[7],
+	uuidByte[8],
+	uuidByte[9],
+	uuidByte[10],
+	uuidByte[11],
+	uuidByte[12],
+	uuidByte[13],
+	uuidByte[14],
+	uuidByte[15],
+	0,
+	_major,
+	0,
+	_minor,
+	_tx
+	};
+	peripheral.setManufacturerData(data, 25);// AGGIUNGE IL MANUFACT
+	peripheral.advertise();
 }
