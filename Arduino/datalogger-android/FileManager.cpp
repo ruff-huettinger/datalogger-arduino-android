@@ -90,6 +90,7 @@ void FileManager::writeAudioData(int16_t* audioData)
 			//file.write(audioData[i]);
 			file.write(lowByte(audioData[i]));
 			file.write(highByte(audioData[i]));
+			writtenBytes += 2;
 		}
 	}
 }

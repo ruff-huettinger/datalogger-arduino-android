@@ -120,7 +120,7 @@ const static uint8_t GAIN = 80;
 // Keep these settings for 15kHz/8bit Audio
 const static uint16_t BUFFER_SIZE = 256;
 
-const static uint32_t SAMPLE_RATE = 41667;
+const static uint32_t SAMPLE_RATE = 31250;
 
 const static uint8_t BIT_DEPTH = 16;
 

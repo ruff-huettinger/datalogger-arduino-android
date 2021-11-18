@@ -29,12 +29,14 @@ public:
 } Serial;
 #endif
 
-const uint32_t MY_BUFFER_SIZE = 8192;
+const float amplifier = 1.0f;
 
-const uint32_t NUM_OF_RUNS = 10;
+const uint32_t MY_BUFFER_SIZE = 256;
+
+const uint32_t NUM_OF_RUNS = 2000;
 
 // use 16000 31250 41667 -> best results with 31250
-const uint16_t SAMPLE_RATE = 41667;
+const uint16_t SAMPLE_RATE = 31250;
 
 const uint8_t BIT_DEPTH = 16;
 
@@ -83,6 +85,7 @@ void setup()
 	while (!Serial)
 		;
 
+	//delay(10000);
 	// configure the data receive callback
 	PDM.onReceive(onPDMdata);
 
@@ -155,6 +158,7 @@ void saveMyBufferOnSD(int bitdeph, int noiseGate) {
 	if (bitdeph == 16) {
 		for (int i = 0; i < MY_BUFFER_SIZE; i++)
 		{
+			myBuffer[i] = myBuffer[i] * amplifier;
 			uFile.write((lowByte(myBuffer[i])));
 			uFile.write((highByte(myBuffer[i])));
 			//Serial.print(i);

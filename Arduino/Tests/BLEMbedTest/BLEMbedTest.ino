@@ -20,6 +20,9 @@
 #include "features/Feature_BLE/ble/BLE.h"
 #include "LEDService.h"
 //#include "pretty_printer.h"
+#include <nrf.h>
+#include <hal/nrf_pdm.h>
+#include <hal/nrf_radio.h>
 
 using namespace mbed;       // Enable us to call mbed functions without "mbed::"
 using namespace ble;
@@ -73,6 +76,8 @@ private:
 
 	void start_advertising() {
 		/* Create advertising parameters and payload */
+
+		//NRF_RADIO->TXPOWER = 8;
 
 		ble::AdvertisingParameters adv_parameters(
 			ble::advertising_type_t::CONNECTABLE_UNDIRECTED,

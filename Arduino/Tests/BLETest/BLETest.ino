@@ -42,6 +42,7 @@
 #include "MemoryFree.h"
 //#include "mbed.h"
 //#include "BLE.h"
+#include <hal/nrf_radio.h>
 
 #include <driver/CordioHCIDriver.h>
 
@@ -65,35 +66,48 @@ BLELocalDevice peripheral;
 
 
 void setup() {
-	Serial.begin(9600);
-	while (!Serial);
+	Serial.begin(115200);
+	//while (!Serial);
 
 	pinMode(ledPin, OUTPUT); // use the LED pin as an output
-
-}
-
-void loop() {
-	//peripheral.debug(Serial);
-	// poll for BLE events
 	Serial.println(freeMemory());
+	peripheral.setAdvertisingInterval(100);
+	peripheral.setConnectionInterval(100, 100);
+
 	if (!peripheral.begin()) {
 		Serial.println("starting BLE failed!");
 		while (1);
 	}
 
-	beaconTest();
-
 	/*
-	peripheral.advertise();
-	long starttime = millis();
-	while (millis() < starttime + 1000) {
-		BLE.poll();
-	}
-	delay(50);
-	//BLE.stopAdvertise();
-	peripheral.end();
-	delay(50);
+	NRF_RADIO->TXPOWER = 9;
+	//NRF_RADIO->TXPOWER = RADIO_TXPOWER_TXPOWER_Pos8dBm;
+
+	//nrf_radio_txpower_set(NRF_RADIO, (nrf_radio_txpower_t)8);
+
+	//SVCALL(1, uint32_t, sd_ble_gap_tx_power_set(0, 0, 0));
+
+	Serial.print("before adv start: ");
+	Serial.println(nrf_radio_txpower_get(NRF_RADIO));
+
+
+
+	//NRF_RADIO->TXPOWER = 8;
+	nrf_radio_txpower_set(NRF_RADIO, (nrf_radio_txpower_t)8);
 	*/
+	
+	peripheral.advertise();
+
+
+	//Serial.print("after adv start: ");
+	//Serial.println(nrf_radio_txpower_get(NRF_RADIO));
+}
+
+bool printed = false;
+
+void loop() {
+	NRF_RADIO->TXPOWER = 8;
+	BLE.poll();
 }
 
 

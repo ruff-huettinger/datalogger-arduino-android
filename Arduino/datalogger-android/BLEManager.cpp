@@ -251,6 +251,7 @@ void BLEManager::setFileManager(FileManager* fmNew)
 
 void BLEManager::run()
 {
+	NRF_RADIO->TXPOWER = 8;
 	BLE.poll();
 }
 
