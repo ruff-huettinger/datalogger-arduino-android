@@ -67,8 +67,7 @@ BLELocalDevice peripheral;
 
 void setup() {
 	Serial.begin(115200);
-	//while (!Serial);
-
+	while (!Serial);
 	pinMode(ledPin, OUTPUT); // use the LED pin as an output
 	Serial.println(freeMemory());
 	peripheral.setAdvertisingInterval(100);
