@@ -12,7 +12,9 @@
   Created 23 11 2021
   By Johannes Brunner
 
-  // toDo: test forwarding of data
+  // toDo: fix cnt in adv
+  // toDo: auto-generate characteristics from server
+  // toDo: update class structure
   
 */
 
@@ -21,8 +23,9 @@
 #include "mbed.h"
 #include "ble/ble.h"
 #include "pretty_printer.h"
+#include "ble/DiscoveredCharacteristic.h"
+#include "ble/DiscoveredService.h"
 #include "LEDService.h"
-#include "GattClientProcess.cpp"
 
 using namespace mbed;
 using namespace ble;
@@ -51,6 +54,7 @@ class BLERepeater : public ble::Gap::EventHandler, public GattClient::EventHandl
 
     const DemoScanParam_t my_scan_param = {ble::scan_interval_t(160), ble::scan_window_t(160), ble::scan_duration_t(0), false};
     static constexpr const char *DEVICE_NAME = "EI_TX8_REP";
+    UUID *REP_CHARACTERISTIC_UUID = new UUID(0xA005);
 
     const uint8_t eggAddress[6] = {
         0x58,
@@ -77,14 +81,15 @@ class BLERepeater : public ble::Gap::EventHandler, public GattClient::EventHandl
     DigitalOut *led = new DigitalOut(p13);
 
     // Gatt variables:
-    //ble::impl::GattClient *_client;
-
     GattClient *_client;
-    //ble *_client;
     ble::connection_handle_t _connection_handle;
-    //DiscoveredCharacteristicNode *_characteristics;
-    //DiscoveredCharacteristicNode *_it;
     GattAttribute::Handle_t _descriptor_handle;
+    DiscoveredCharacteristic *_ledCharacteristic;
+
+    // Adv variables:
+    uint8_t _adv_buffer[ble::LEGACY_ADVERTISING_MAX_SIZE];
+    ble::AdvertisingDataBuilder *_adv_data_builder;
+    LEDService *_led_service;
 
 public:
     BLERepeater()
@@ -105,6 +110,8 @@ public:
         _client = &_ble->gattClient();
 
         _ble->onEventsToProcess(schedule_ble_events);
+
+        _adv_data_builder = new ble::AdvertisingDataBuilder(_adv_buffer);
 
         /* handle gap events */
         _gap->setEventHandler(this);
@@ -225,36 +232,31 @@ public:
 
     // ---- GAP event handler
 
+    int cnt = 0;
+
     void onConnectionComplete(const ble::ConnectionCompleteEvent &event)
     {
         Serial.println("I connected to egg");
         _connection_handle = event.getConnectionHandle();
-        findService();
+        if (cnt == 0)
+        {
+            cnt++;
+            findService();
+        }
     }
 
     void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &)
     {
         Serial.println("I disconnected from egg");
-        _gap->startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        //_gap->startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
     }
 
     // GATT cbs
 
-    /**
-     * Called when the CCCD has been written.
-     */
     void when_descriptor_written(const GattWriteCallbackParams *event)
     {
     }
 
-    /**
-     * Print the updated value of the characteristic.
-     *
-     * This function is called when the server emits a notification or an
-     * indication of a characteristic value the client has subscribed to.
-     *
-     * @see GattClient::onHVX()
-     */
     void when_characteristic_changed(const GattHVXCallbackParams *event)
     {
     }
@@ -279,19 +281,24 @@ public:
     void when_service_discovery_ends(ble::connection_handle_t connection_handle)
     {
         Serial.println("Gatt end cb triggered");
-        /*
-        if (!_characteristics)
-        {
-            printf("No characteristics discovered, end of the process.\r\n");
-            return;
-        }
 
-        printf("All services and characteristics discovered, process them.\r\n");
+        const byte a[1] = {1};
 
-        // reset iterator and start processing characteristics in order
-        _it = NULL;
-        _event_queue->call(mbed::callback(this, &Self::process_next_characteristic));
-        */
+        //GATT_OP_WRITE_CMD
+
+        _ledCharacteristic->getValueHandle();
+
+        //_client->write(GattClient::GATT_OP_WRITE_REQ, _connection_handle, _ledCharacteristic->getValueHandle(), 1, a);
+
+        _ledCharacteristic->write(1, a);
+
+        Serial.print("LED Char uuid: ");
+        print_uuid(_ledCharacteristic->getUUID());
+        Serial.println();
+
+        Serial.println((int)_ledCharacteristic->getLastHandle());
+
+        startAdvertising();
     }
 
     /**
@@ -315,21 +322,80 @@ public:
             discovered_characteristic->getValueHandle(),
             discovered_characteristic->getLastHandle());
 
-        // add the characteristic into the list of discovered characteristics
+        UUID ledUUID("100A"); // toDo: compare on LED
 
-        /*
-        bool success = add_characteristic(discovered_characteristic);
-        if (!success)
+        if (discovered_characteristic->getLastHandle() == 65535)
         {
-            printf("Error: memory allocation failure while adding the discovered characteristic.\r\n");
-            _client->terminateServiceDiscovery();
-            stop();
-            return;
+            Serial.println("compare works");
+            //memcpy(_ledCharacteristic, *discovered_characteristic, sizeof(DiscoveredCharacteristic));
+            _ledCharacteristic = new (std::nothrow) DiscoveredCharacteristic(*discovered_characteristic);
         }
-        */
     }
 
-    // ----- Helper
+    // Advertising stuff
+
+    void startAdvertising()
+    {
+        Serial.println("start adv");
+
+        _led_service = new LEDService(_ble, false);
+
+        _ble->gattServer().onDataWritten(this, &Self::on_data_written);
+
+        ble::AdvertisingParameters adv_parameters(
+            ble::advertising_type_t::CONNECTABLE_UNDIRECTED,
+            ble::adv_interval_t(ble::millisecond_t(100)),
+            ble::adv_interval_t(ble::millisecond_t(100)));
+
+        _adv_data_builder->setFlags();
+        _adv_data_builder->setLocalServiceList(mbed::make_Span(REP_CHARACTERISTIC_UUID, 1));
+        _adv_data_builder->setName(DEVICE_NAME);
+
+        adv_parameters.setPhy(ble::phy_t::LE_1M, ble::phy_t::LE_1M); // Set Advertising radio modulation to LE_CODED Phy (=Long Range)
+        adv_parameters.setTxPower(+8);
+
+        ble_error_t error = _gap->setAdvertisingParameters(
+            ble::LEGACY_ADVERTISING_HANDLE,
+            adv_parameters);
+        if (error)
+        {
+            printf("_ble.gap().setAdvertisingParameters() failed\r\n");
+            return;
+        }
+
+        error = _gap->setAdvertisingPayload(
+            ble::LEGACY_ADVERTISING_HANDLE,
+            _adv_data_builder->getAdvertisingData());
+        if (error)
+        {
+            printf("_ble.gap().setAdvertisingPayload() failed\r\n");
+            return;
+        }
+
+        error = _gap->startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+        if (error)
+        {
+            printf("_ble.gap().startAdvertising() failed\r\n");
+            return;
+        }
+    }
+
+    void on_data_written(const GattWriteCallbackParams *params)
+    {
+        Serial.println("REP received data");
+        if ((params->handle == _led_service->getValueHandle()) && (params->len == 1))
+        {
+            //_actuated_led = *(params->data);
+
+            Serial.println(*params->data);
+
+            const uint8_t x[1] = {*params->data};
+
+            _ledCharacteristic->write(1, x);
+        }
+    }
+
+    // ----- Helpers
     template <typename ContextType>
     FunctionPointerWithContext<ContextType> as_cb(
         void (Self::*member)(ContextType context))

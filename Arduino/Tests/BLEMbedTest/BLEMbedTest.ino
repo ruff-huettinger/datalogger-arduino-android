@@ -131,6 +131,7 @@ private:
 	 * @param[in] params Information about the characterisitc being updated.
 	 */
 	void on_data_written(const GattWriteCallbackParams* params) {
+		Serial.println("I received data");
 		if ((params->handle == _led_service->getValueHandle()) && (params->len == 1)) {
 			_actuated_led = *(params->data);
 		}
@@ -143,7 +144,14 @@ private:
 private:
 	/* Event handler */
 
+	void onConnectionComplete(const ble::ConnectionCompleteEvent& event) {
+		Serial.println("A device connected to egg");
+	}
+
+
+
 	void onDisconnectionComplete(const ble::DisconnectionCompleteEvent&) {
+		Serial.println("A device disconnected from egg");
 		_ble.gap().startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
 	}
 
