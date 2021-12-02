@@ -12,6 +12,8 @@ public class EggUI : MonoBehaviour
     /// Timeout in secs for displaying the egg as unreachable
     /// </summary>
     private const double RSSI_TIMEOUT_S = 5.0f;
+    private const int RSSI_MAX = 50;
+    private const int RSSI_MIN = 95;
 
     public Button statusBtn;
     public Button refreshBtn;
@@ -37,8 +39,10 @@ public class EggUI : MonoBehaviour
     public Text LightText;
     public Text BLEWarningText;
     public Text SDSpaceText;
+    public Text BatValueText;
     public Text NextBLETimeText;
     public Text SDProblemWarningText;
+    public Text rssiText;
 
     public Slider batSlider;
     public Slider spaceSlider;
@@ -293,18 +297,20 @@ public class EggUI : MonoBehaviour
     public void UpdateRSSI(float rssiValue, DateTime lastRSSITime)
     {
         TimeSpan difference = DateTime.Now.Subtract(lastRSSITime);
-        if (!(difference.TotalSeconds > RSSI_TIMEOUT_S))
+        if (!(difference.TotalSeconds > RSSI_TIMEOUT_S) && rssiValue > -(RSSI_MIN))
         {
             SetStatusText("Sensor-Ei: ");
             ShowButton(statusBtn);
             rssiValue = Mathf.Abs(rssiValue);
-            rssiIcon.fillAmount = Utility.RemapClamped(rssiValue, 50, 100, 1.0f, 0.17f);
+            rssiIcon.fillAmount = Utility.RemapClamped(rssiValue, RSSI_MAX, RSSI_MIN, 1.0f, 0.17f);
+            rssiText.text = "-" + rssiValue.ToString("0") + "dBm";
         }
         else
         {
             SetStatusText("Sensor-Ei: Nicht erreichbar");
             HideButton(statusBtn);
             rssiIcon.fillAmount = 0.0f;
+            rssiText.text = "";
         }
     }
 
@@ -313,6 +319,7 @@ public class EggUI : MonoBehaviour
         spaceSlider.value = sd;
         batSlider.value = bat;
         SDSpaceText.text = (writtenBytes / 1000000000.0f).ToString("00.00") + " GB";
+        BatValueText.text = (bat * 100).ToString("0") + "%";
     }
 
     public void ChangeStatusButton(bool onoff, string text)

@@ -168,6 +168,10 @@ public class ElectronicEgg : MonoBehaviour
         string value = menuOptions[ui.dropInterval.value].text;
         int myInt = int.Parse(value);
         ble.SendInterval(myInt);
+
+        pers.SaveTimetable(state.currentRunningModes);
+        TimeSpan t = pers.GetBLETimeDif();
+        PrintLog(t.ToString());
     }
 
     public void OnStartButton()

@@ -32,6 +32,9 @@ public class EggBLE : MonoBehaviour
             {
                 ElectronicEgg.PrintLog("Initialized BLE Interface");
                 egg.currentState = APPSTATES.DISCONNECTED;
+                BluetoothLEHardwareInterface.BluetoothScanMode(BluetoothLEHardwareInterface.ScanMode.LowLatency);
+                BluetoothLEHardwareInterface.BluetoothConnectionPriority(BluetoothLEHardwareInterface.ConnectionPriority.High);
+
             }, (error) =>
             {
                 ElectronicEgg.PrintError("BLE Init Error");
@@ -51,16 +54,16 @@ public class EggBLE : MonoBehaviour
     /// </summary>
     public void StartRSSIScan()
     {
-        BluetoothLEHardwareInterface.ScanForPeripheralsWithServices(null, null, (address, name, rssi, bytes) =>
+        string[] serviceArray = new string[] { "f1111a7f-0000-41f9-a127-aedf35a799b3" };
+
+        BluetoothLEHardwareInterface.ScanForPeripheralsWithServices(serviceArray, null, (address, name, rssi, bytes) =>
         {
             // use this one if the device responses with manufacturer specific data and the rssi
-            // ElectronicEgg.PrintLog(name + rssi);
-            if (name.Contains(DeviceName))
-            {
-                //ElectronicEgg.PrintError("Update RSSI: " + rssi);
-                state.rssi = rssi;
-                state.lastRSSITime = DateTime.Now;
-            }
+            ElectronicEgg.PrintLog(name + rssi);
+            //ElectronicEgg.PrintError("Update RSSI: " + rssi);
+            state.rssi = rssi;
+            state.lastRSSITime = DateTime.Now;
+
         }, true);
     }
 
