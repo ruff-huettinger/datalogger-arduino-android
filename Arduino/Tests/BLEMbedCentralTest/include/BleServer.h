@@ -3,8 +3,9 @@
 #include "Arduino.h"
 #include "ble/ble.h"
 #include "LedService.h"
+#include "BleConnection.h"
 
-class BleServer
+class BleServer : public BleConnection
 {
 private:
     static constexpr const char *DEVICE_NAME = "EI_TX8_REP";
@@ -24,4 +25,7 @@ public:
 
     void setServer(GattServer *newServer);
     void setCallbacks();
+
+    void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override;
+    void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override;
 };

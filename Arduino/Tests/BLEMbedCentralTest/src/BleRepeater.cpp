@@ -41,24 +41,28 @@ void BleRepeater::onConnectionComplete(const ble::ConnectionCompleteEvent &event
 {
     if (event.getOwnRole() == connection_role_t(connection_role_t::CENTRAL))
     {
-        Serial.println("I connected as Central (to Egg)");
-        //_client.onConnectionComplete();
+        _client.onConnectionComplete(event);
     }
 
     else if (event.getOwnRole() == connection_role_t(connection_role_t::PERIPHERAL))
     {
-        Serial.println("A device connected to me (Handy)");
-        //_server.onConnectionComplete();
+        _server.onConnectionComplete(event);
     }
-
-    //_connection_handle = event.getConnectionHandle();
 }
 
-void BleRepeater::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &)
+void BleRepeater::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event)
 {
     // use connection handle to find decision (server <> client)
     Serial.println("I disconnected from egg");
     //_gap->startAdvertising(ble::LEGACY_ADVERTISING_HANDLE);
+    if (event.getConnectionHandle() == _client.getHandle())
+    {
+        _client.onDisconnectionComplete(event);
+    }
+    else if (event.getConnectionHandle() == _server.getHandle())
+    {
+        _server.onDisconnectionComplete(event);
+    }
 }
 
 void BleRepeater::onInitialized(BLE::InitializationCompleteCallbackContext *event)

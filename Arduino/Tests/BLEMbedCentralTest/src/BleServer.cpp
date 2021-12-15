@@ -20,3 +20,15 @@ void BleServer::onGattServerData(const GattWriteCallbackParams *params)
 {
     Serial.println("BleServer::onGattServerData triggered");
 }
+
+void BleServer::onConnectionComplete(const ble::ConnectionCompleteEvent &event)
+{
+    Serial.println("A device connected to me (Handy)");
+    BleConnection::onConnectionComplete(event);
+}
+
+void BleServer::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event)
+{
+    Serial.println("A device disconnected from me (Handy)");
+    BleConnection::onDisconnectionComplete(event);
+}

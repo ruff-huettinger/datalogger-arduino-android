@@ -3,10 +3,13 @@
 #include "Arduino.h"
 #include "pretty_printer.h"
 #include "ble/ble.h"
+#include "BleConnection.h"
+#include "ble/DiscoveredCharacteristic.h"
+#include "ble/DiscoveredService.h"
 
 using namespace ble;
 
-class BleClient : public ble::Gap::EventHandler
+class BleClient : public GattClient::EventHandler, public BleConnection
 {
 private:
     typedef struct
@@ -38,12 +41,21 @@ private:
     GattClient *_client;
     ble::Gap *_gap;
 
-    bool _isConnecting = false;
-    bool _isConnected = false;
-
-    ble::connection_handle_t _connection_handle;
     GattAttribute::Handle_t _descriptor_handle;
     DiscoveredCharacteristic *_ledCharacteristic;
+
+    void discoverService();
+
+    template <typename ContextType>
+
+    FunctionPointerWithContext<ContextType> convertToCallback(
+        void (BleClient::*member)(ContextType context));
+
+    void when_characteristic_discovered(const DiscoveredCharacteristic *discovered_characteristic);
+    void when_service_discovery_ends(ble::connection_handle_t connection_handle);
+    void when_service_discovered(const DiscoveredService *discovered_service);
+    void when_descriptor_written(const GattWriteCallbackParams *event);
+    void when_characteristic_changed(const GattHVXCallbackParams *event);
 
 public:
     BleClient(){};
@@ -56,4 +68,6 @@ public:
     const uint8_t *getEggAdress();
 
     void onAdvertisingReport(const ble::AdvertisingReportEvent &event);
+    void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override;
+    void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override;
 };

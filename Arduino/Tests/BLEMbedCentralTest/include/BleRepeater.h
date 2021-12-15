@@ -29,7 +29,7 @@ private:
 
     // GAP handlers (forwarded to client and server)
     void onConnectionComplete(const ble::ConnectionCompleteEvent &event); // client + server
-    void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &); // client + server
+    void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event); // client + server
     void onAdvertisingReport(const ble::AdvertisingReportEvent &event); // client
 
     // Asynchronous cbs

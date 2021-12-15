@@ -14,13 +14,22 @@
  * limitations under the License.
  */
 
+#pragma once
+
+#include "Arduino.h"
 #include <mbed.h>
 #include "ble/BLE.h"
 #include "gap/Gap.h"
 #include "gap/AdvertisingDataParser.h"
+#include "ble/DiscoveredCharacteristic.h"
+#include "ble/DiscoveredService.h"
+
+typedef DiscoveredCharacteristic::Properties_t Properties_t;
 
 using namespace mbed;
 using namespace ble;
+
+#define printf(...) Serial.printf(__VA_ARGS__)
 
 inline void print_error(ble_error_t error, const char *msg)
 {
@@ -68,4 +77,47 @@ inline void print_error(ble_error_t error, const char *msg)
         break;
     }
     printf("\r\n");
+}
+
+/**
+     * Print the value of a UUID.
+     */
+static void print_uuid(const UUID &uuid)
+{
+    const uint8_t *uuid_value = uuid.getBaseUUID();
+
+    // UUIDs are in little endian, print them in big endian
+    for (size_t i = 0; i < uuid.getLen(); ++i)
+    {
+        printf("%02X", uuid_value[(uuid.getLen() - 1) - i]);
+    }
+}
+
+/**
+     * Print the value of a characteristic properties.
+     */
+static void print_properties(const Properties_t &properties)
+{
+    const struct
+    {
+        bool (Properties_t::*fn)() const;
+        const char *str;
+    } prop_to_str[] = {
+        {&Properties_t::broadcast, "broadcast"},
+        {&Properties_t::read, "read"},
+        {&Properties_t::writeWoResp, "writeWoResp"},
+        {&Properties_t::write, "write"},
+        {&Properties_t::notify, "notify"},
+        {&Properties_t::indicate, "indicate"},
+        {&Properties_t::authSignedWrite, "authSignedWrite"}};
+
+    printf("[");
+    for (size_t i = 0; i < (sizeof(prop_to_str) / sizeof(prop_to_str[0])); ++i)
+    {
+        if ((properties.*(prop_to_str[i].fn))())
+        {
+            printf(" %s", prop_to_str[i].str);
+        }
+    }
+    printf(" ]");
 }
