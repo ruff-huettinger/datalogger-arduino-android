@@ -30,6 +30,16 @@ void BleConnection::setHandle(connection_handle_t newHandle)
     _connection_handle = newHandle;
 };
 
+void BleConnection::setGap(ble::Gap *newGap)
+{
+    _gap = newGap;
+};
+
+void BleConnection::setData(BleData newData)
+{
+    _data = newData;
+};
+
 void BleConnection::onConnectionComplete(const ble::ConnectionCompleteEvent &event)
 {
     setConnected(true);

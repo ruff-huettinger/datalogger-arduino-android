@@ -10,9 +10,13 @@ void BleRepeater::init()
 
     _event_queue = new events::EventQueue(10 * EVENTS_EVENT_SIZE);
 
-    _client.setClient(&_ble->gattClient(), _gap);
+    _client.setClient(&_ble->gattClient());
+    _client.BleConnection::setGap(_gap);
+    _client.BleConnection::setData(_data);
 
     _server.setServer(&_ble->gattServer());
+    _server.BleConnection::setGap(_gap);
+    _server.BleConnection::setData(_data);
     _server.setCallbacks();
 
     _ble->onEventsToProcess(scheduleBleEvents);
@@ -75,3 +79,8 @@ void BleRepeater::onAdvertisingReport(const ble::AdvertisingReportEvent &event)
 {
     _client.onAdvertisingReport(event);
 };
+
+void BleRepeater::onConnectedAsClient()
+{
+    _server.startAdvertising();
+}

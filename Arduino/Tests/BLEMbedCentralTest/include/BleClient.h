@@ -6,6 +6,7 @@
 #include "BleConnection.h"
 #include "ble/DiscoveredCharacteristic.h"
 #include "ble/DiscoveredService.h"
+#include "BleData.h"
 
 using namespace ble;
 
@@ -39,7 +40,6 @@ private:
         0xE6};
 
     GattClient *_client;
-    ble::Gap *_gap;
 
     GattAttribute::Handle_t _descriptor_handle;
     DiscoveredCharacteristic *_ledCharacteristic;
@@ -61,8 +61,8 @@ public:
     BleClient(){};
     ~BleClient(){};
 
-    void setClient(GattClient *newClient, ble::Gap *newGap);
-
+    void setClient(GattClient *newClient);
+    
     void startScanning();
 
     const uint8_t *getEggAdress();

@@ -35,6 +35,8 @@ private:
     // Asynchronous cbs
     void onInitialized(BLE::InitializationCompleteCallbackContext *event);
 
+    void onConnectedAsClient();
+
 public:
     BleRepeater(){};
     ~BleRepeater(){};

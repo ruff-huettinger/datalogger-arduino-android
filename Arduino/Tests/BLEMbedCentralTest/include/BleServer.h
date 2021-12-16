@@ -26,6 +26,8 @@ public:
     void setServer(GattServer *newServer);
     void setCallbacks();
 
+    void startAdvertising();
+
     void onConnectionComplete(const ble::ConnectionCompleteEvent &event) override;
     void onDisconnectionComplete(const ble::DisconnectionCompleteEvent &event) override;
 };

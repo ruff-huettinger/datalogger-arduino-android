@@ -1,9 +1,8 @@
 #include "BleClient.h"
 
-void BleClient::setClient(GattClient *newClient, ble::Gap *newGap)
+void BleClient::setClient(GattClient *newClient)
 {
     _client = newClient;
-    _gap = newGap;
 };
 
 void BleClient::startScanning()
@@ -158,7 +157,7 @@ void BleClient::when_service_discovered(const DiscoveredService *discovered_serv
 
 void BleClient::when_service_discovery_ends(ble::connection_handle_t connection_handle)
 {
-    Serial.println("Gatt end cb triggered");
+    Serial.println("Service discovery end cb triggered");
 
     const byte a[1] = {1};
 
@@ -175,6 +174,9 @@ void BleClient::when_service_discovery_ends(ble::connection_handle_t connection_
     Serial.println();
 
     Serial.println((int)_ledCharacteristic->getLastHandle());
+
+    // toDo: call a function of BLERepeater to invoke advertising on repeater
+    // toDo: How? Callback? Object? 
 
     //startAdvertising();
 }
@@ -206,6 +208,7 @@ void BleClient::when_characteristic_discovered(const DiscoveredCharacteristic *d
     {
         Serial.println("compare works");
         //memcpy(_ledCharacteristic, *discovered_characteristic, sizeof(DiscoveredCharacteristic));
-        _ledCharacteristic = new (std::nothrow) DiscoveredCharacteristic(*discovered_characteristic);
+        //_ledCharacteristic = new (std::nothrow) DiscoveredCharacteristic(*discovered_characteristic);
+        _data.addNewCharacteristic(new (std::nothrow) DiscoveredCharacteristic(*discovered_characteristic));
     }
 }

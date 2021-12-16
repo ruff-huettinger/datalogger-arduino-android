@@ -32,3 +32,9 @@ void BleServer::onDisconnectionComplete(const ble::DisconnectionCompleteEvent &e
     Serial.println("A device disconnected from me (Handy)");
     BleConnection::onDisconnectionComplete(event);
 }
+
+void BleServer::startAdvertising()
+{
+    Serial.println("Start Advertising");
+    
+}
