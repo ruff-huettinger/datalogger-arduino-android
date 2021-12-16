@@ -23,6 +23,8 @@ class SensorTemp
 {
 private:
 
+	HTS221 smeHumidity;
+
 	const static uint8_t PIN_ENABLE_HTS = 4;
 	const float TEMP_OFFSET = -2.0f;
 	const float HUMI_OFFSET = 0.0f;
@@ -40,6 +42,7 @@ public:
 	bool writeRegister(byte slaveAddress, byte regToWrite, byte dataToWrite);
 	byte readRegister(byte slaveAddress, byte regToRead);
 	void enableHeater();
+	void disableHeater();
 	SensorTemp() {};
 	~SensorTemp() {};
 };

@@ -23,12 +23,12 @@ void SensorTemp::stop()
 
 float* SensorTemp::getSensorValues() {
 	x[0] = smeHumidity.readTemperature();
-	x[0] += 2.0;
 
 	uint32_t delayMillis = millis();
 	while ((millis() - delayMillis) < 100) {};
-
+	
 	x[1] = smeHumidity.readHumidity();
+
 	return x;
 }
 
@@ -83,6 +83,23 @@ void SensorTemp::enableHeater()
 	data &= ~(0b1 << 1);
 	data |= (0b1 << 1);
 
+	Serial.println(data);
+
 	writeRegister(0x5F, 0x21, (uint8_t)data);
+}
+
+void SensorTemp::disableHeater()
+{
+	int32_t data = 0;
+
+	data = readRegister(0x5F, 0x21);
+
+	data &= ~(0b1 << 1);
+	data |= (0b0 << 1);
+
+	Serial.println(data);
+
+	//writeRegister(0x5F, 0x21, (uint8_t)data);
+	writeRegister(0x5F, 0x21, 0);
 }
 

@@ -11,7 +11,7 @@ void setup() {
 }
 
 void loop() {
-	Wire.begin();
+	Wire1.begin();
 	smeHumidity.setWire(&Wire1);
 
 	if (!smeHumidity.begin()) {
@@ -33,7 +33,7 @@ void loop() {
 	Serial.print(smeHumidity.readTemperature());
 	Serial.print(" | ");
 	Serial.println(smeHumidity.readHumidity());
-	Wire.end();
+	Wire1.end();
 
 	delay(1000);
 }

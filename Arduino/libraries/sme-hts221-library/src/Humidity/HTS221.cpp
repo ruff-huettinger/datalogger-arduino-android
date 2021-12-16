@@ -36,17 +36,21 @@ HTS221::HTS221(void) : _address(HTS221_ADDRESS)
 
 bool HTS221::begin(void)
 {
-	uint8_t data;
+	if (wireToUse_ != NULL) {
+		uint8_t data;
 
-	data = readRegister(_address, WHO_AM_I);
-	if (data == WHO_AM_I_RETURN) {
-		if (activate()) {
-			storeCalibration();
-			return true;
+		data = readRegister(_address, WHO_AM_I);
+		if (data == WHO_AM_I_RETURN) {
+			if (activate()) {
+				storeCalibration();
+				return true;
+			}
 		}
+		return false;
 	}
-
-	return false;
+	else {
+		return false;
+	}
 }
 
 bool
@@ -208,22 +212,12 @@ HTS221::readHumidity(void)
 const double
 HTS221::readTemperature(void)
 {
-	if (wireToUse_ != NULL) {
-		HTS221Class HTS(*wireToUse_);
-	}
-	else {
-		HTS221Class HTS(Wire1);
-	}
-
 	uint8_t data = 0;
 	uint16_t t_out = 0;
 	double t_temp = 0.0;
 	double deg = 0.0;
 
 	data = readRegister(_address, STATUS_REG);
-
-
-
 
 	if (data & TEMPERATURE_READY) {
 
@@ -241,29 +235,8 @@ HTS221::readTemperature(void)
 		deg = (double)((int16_t)_T0_degC) / 8.0;     // remove x8 multiple
 		_temperature = deg + t_temp;   // provide signed celsius measurement unit
 	}
-
-	/*
-
-	//int16_t tout = i2cRead16(HTS221_TEMP_OUT_L_REG);
-	//float reading = (tout * _hts221TemperatureSlope + _hts221TemperatureZero);
-
-	HTS.readHTS221Calibration();
-	float _hts221TemperatureSlope = HTS.getSlope();
-	float _hts221TemperatureZero = HTS.getZero();
-	int16_t tout = HTS.i2cRead16(0x2a);
-	Serial.println(tout);
-
-	//int16_t tout = i2cRead16(HTS221_TEMP_OUT_L_REG);
-	float reading = (tout * _hts221TemperatureSlope + _hts221TemperatureZero);
-	*/
-
-	//return 0;
-
 	return _temperature;
 }
-
-
-
 
 // Read a single byte from addressToRead and return it as a byte
 byte HTS221::readRegister(byte slaveAddress, byte regToRead)
@@ -300,7 +273,7 @@ bool HTS221::writeRegister(byte slaveAddress, byte regToWrite, byte dataToWrite)
 		return (errorNo == 0);
 	}
 	else {
-		return 1;
+		return -1;
 	}
 }
 

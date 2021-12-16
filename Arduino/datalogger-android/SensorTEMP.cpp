@@ -3,15 +3,19 @@
 void SensorTemp::init()
 {
 	//Initiate the Wire library and join the I2C bus
+	if (wireToUse_ != NULL) {
+		wireToUse_->begin();
+		smeHumidity.setWire(wireToUse_);
+		digitalWrite(PIN_ENABLE_HTS, LOW);
 
-	wireToUse_->begin();
-	smeHumidity.setWire(wireToUse_);
-	digitalWrite(PIN_ENABLE_HTS, LOW);
+		smeHumidity.begin();
 
-	smeHumidity.begin();
-
-	uint32_t delayMillis = millis();
-	while ((millis() - delayMillis) < 50) {};
+		uint32_t delayMillis = millis();
+		while ((millis() - delayMillis) < 50) {};
+	}
+	else {
+		DEBUG_PRINTLN("Call SensorTemp setWire before begin!");
+	}
 }
 
 void SensorTemp::stop()
