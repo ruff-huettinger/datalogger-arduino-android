@@ -17,9 +17,9 @@ class SensorLight : public ISensor
 private:
 
 public:
-	virtual void init();
-	virtual void stop();
-	virtual void getSensorValue(measuring* values);
+	void init();
+	void stop();
+	void getSensorValue(measuring* values);
 	SensorLight() {};
 	~SensorLight() {};
 };

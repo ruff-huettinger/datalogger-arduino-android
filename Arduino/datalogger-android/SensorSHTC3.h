@@ -2,15 +2,13 @@
 
 #include "ISensor.h"
 #include "Wire.h"
-
-#include "SparkFun_SHTC3.h" // Click here to get the library: http://librarymanager/All#SparkFun_SHTC3
-
+#include "SparkFun_SHTC3.h"
 
 /**
  * @file SensorSHTC3.h
- * 
- * A new sensor for temp and humi
  *
+ * Implementation of Temperatur and Humidity Sensor SHTC3
+ * Currently not used in Sensor-Egg
  *
  * @author Johannes Brunner
  *
@@ -20,14 +18,13 @@
 class SensorSHTC3 : public ISensor
 {
 private:
-
-	SHTC3 mySHTC3;
-	SHTC3_Status_TypeDef result;
+	SHTC3 mySHTC3_;
+	SHTC3_Status_TypeDef result_;
 
 public:
-	virtual void init();
-	virtual void stop();
-	virtual void getSensorValue(measuring* values);
+	void init();
+	void stop();
+	void getSensorValue(measuring* values);
 	SensorSHTC3() {};
 	~SensorSHTC3() {};
 };

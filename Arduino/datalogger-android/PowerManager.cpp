@@ -124,20 +124,3 @@ float PowerManager::mapfloat(float x, float in_min, float in_max, float out_min,
 {
 	return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
-/*
-* 	NRF_CLOCK->TASKS_HFCLKSTART;  //turn-on the HF crystal oscillator
-
-	NRF_CLOCK->EVENTS_HFCLKSTARTED;  //After HF Clock started.
-	NRF_RADIO->TASKS_RXEN;  //turn on the radio receiver
-
-	NRF_RADIO->EVENTS_READY;  //After event READY, radio shall be in state RXIDLE.
-	NRF_RADIO->TASKS_START;  //Move from RXIDLE mode into RX mode.
-
-	NRF_RTC0->EVENTS_COMPARE[0];  // If time to turn off the radio receiver
-	NRF_RADIO->TASKS_STOP; //Move radio from RX mode back into RXIDLE mode
-
-	NRF_RTC0->EVENTS_COMPARE[1];  // If enough time has passed
-	NRF_RADIO->TASKS_DISABLE; //Sleep the radio
-	NRF_CLOCK->TASKS_HFCLKSTOP; //Turn-off the high frequency crystal oscillator
-*/

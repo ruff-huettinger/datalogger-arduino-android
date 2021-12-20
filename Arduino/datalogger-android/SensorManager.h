@@ -24,13 +24,11 @@
 class SensorManager
 {
 private:
-
-	static bool measurementActive;
+	static uint8_t measurementActive_;
 
 public:
 
 	SensorManager() {};
-
 	~SensorManager() {};
 
 	// creates sensor-objects, starts measurings and fills the whole values-array
@@ -42,11 +40,7 @@ public:
 	// prints sensor values to serial
 	void printSensorValues(measuring* dataToPrint, uint8_t numOfSensors);
 
-	//void addIDs(measuring* values); not in use
-
-	static bool getMeasurementActive();
-
-	static void setMeasurementActive(bool active);
-
+	static uint8_t getMeasurementActive();
+	static void setMeasurementActive(uint8_t active);
 };
 

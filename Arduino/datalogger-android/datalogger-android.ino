@@ -1,43 +1,33 @@
-/*
-	Electronic Egg-Operation Version 2 for unity app (multi-threaded)
-
-	The circuit:
-	* Board: Arduino Nano 33 BLE Sense
-	* Adafruit micro-sd shield with card inserted
-	* External battery voltage supply and connected on D6 + D7
-
-
-	Created 20 05 2021
-	By Johannes Brunner
-
-
-*/
-
-// Uncomment for fast compiling with Visual Micro
-#define FAST_COMPILE
+/**
+ * @file datalogger-android.ino
+ *
+ * Electronic Egg - Arduino Project
+ *
+ * Created 20 05 2021
+ * @author Johannes Brunner
+ *
+ */
 
 #include <mbed.h>
+#include <Arduino.h>
+#include "config.h"
 #include "BLEManager.h"
 #include "FileManager.h"
 #include "SensorManager.h"
 #include "Recorder.h"
-#include "config.h"
 #include "StateTable.h"
 #include "TimeManager.h"
 
 #ifdef FAST_COMPILE
-// Libs included here for visual micro compiler
-#include <Arduino.h>
+ // Libs included here for visual micro compiler
 #include <stdint.h>
 #include <SPI.h>
 #include <Wire.h>
 #include "ArduinoBLE.h"
-//#include "SdFat.h"
 #include "SdFat_2_1.h"
-#include "ArduinoPDM.h"
+#include "PDMUpdate.h"
 #include "Arduino_APDS9960.h"
 #include "SparkFunLSM9DS1.h"
-#include "Arduino_HTS221.h"
 #include "HTS221.h"
 #include "SparkFun_SHTC3.h"
 #include "MemoryFree.h"
@@ -57,9 +47,8 @@ volatile hourTable* activeTable = sensorStateTable;
 
 //--------------------------------------------------
 
-// Thread for BLE-connection
+// Mbed-Thread for BLE-connection
 Thread* btThread = NULL;
-
 
 // Objects
 BLEManager bm;
@@ -78,12 +67,6 @@ const char projectName[] = "S-10926-Elektronisches Ei";
 const char ver[] = "Prototyp:2.0 with UnityApp";
 
 
-// !!! toDo: check cardsize after upgrade to sdfat 2.1 <- looks good
-// toDo: change audio-recorder file lengths -> independent from sensor-interval
-// toDo: write documentation for changes to ble
-
-
-// override the default main function to remove USB CDC feature
 int main(void)
 {
 	init();
@@ -140,7 +123,6 @@ void setup() {
 	sensorDataLength = sm.getDataLength();
 	sensorData = new measuring[sensorDataLength];
 
-
 	// set starting time
 #ifdef MANUAL_START_TIME
 	startTime = 1613778600; // Set RTC time to 11:50 for debuging
@@ -175,7 +157,7 @@ void loop() {
 
 	//sm.printSensorValues(sensorData, sensorDataLength); //-> uncomment for printing the sensors
 
-//---- 2. Get current Time, Timedif to next measurement and hours-mode from ActiveTable (set via BLE)
+	//---- 2. Get current Time, Timedif to next measurement and hours-mode from ActiveTable (set via BLE)
 	double sensorInterval = tman.getDiffTime() * 1000;
 	tm* currentTime = tman.getCurrentTime();
 #ifdef DEBUG_TIME
@@ -192,7 +174,6 @@ void loop() {
 	DEBUG_PRINT(": ");
 	DEBUG_PRINTLN("Sensor measuring complete");
 #endif // DEBUG_SERIAL
-
 
 	/*---- 3. Decide how to continue until next measurement depending on hourmode:
 			  - Sleep
@@ -236,7 +217,7 @@ void loop() {
 	}
 }
 
-bool initializedByBLEUser() {
+uint8_t initializedByBLEUser() {
 
 	// get sensor values and battery one time for displaying it in the app 
 	sm.getSensorValues(sensorData);
@@ -276,8 +257,7 @@ void threadFunctionBLE() {
 
 	tm* time = tman.getCurrentTime();
 
-
-	// only run BLE from XX:00 to XX:BLE_TIME_MIN (eg 09:00 to 09:30)
+	// only run BLE from XX:00 to XX:BLE_TIME_MIN (eg 09:00:00 to 09:59:59)
 	while ((time->tm_min < BLE_TIME_MIN) || (time->tm_sec < BLE_TIME_SEC))
 
 	{
@@ -329,6 +309,8 @@ void recordSensors() {
 }
 
 void recordAudio(char* filename, double timedif) {
+	// the duration of 1 audio file matches the interval beetween sensor recordings
+
 	fm.createAudioFile(filename);
 	fm.openFile(filename);
 	r.begin();

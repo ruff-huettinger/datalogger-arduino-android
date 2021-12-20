@@ -3,24 +3,24 @@
 void FileManager::init()
 {
 	// sd.begin should only be called once, because it causes a memory leak...
-	if (!sd.begin(SDchipSelect, SD_SCK_MHZ(50))) {
+	if (!sd_.begin(SD_CHIP_SELECT, SD_SCK_MHZ(50))) {
 		DEBUG_PRINTLN("!!!- Unable to access SD card -!!!");
 	#ifndef DEBUG_BOARD
 		//showError();
-		sdInitialized = false;
+		sdInitialized_ = false;
 	#endif // !DEBUG_BOARD
 	}
 	else {
-		sdInitialized = true;
+		sdInitialized_ = true;
 	}
 
 	csd_t m_csd;
-	!sd.card()->readCSD(&m_csd);
-	cardSize = 0.000512 * sdCardCapacity(&m_csd);
+	!sd_.card()->readCSD(&m_csd);
+	cardSize_ = 0.000512 * sdCardCapacity(&m_csd);
 
 	cid_t m_cid;
-	sd.card()->readCID(&m_cid);
-	manufacturerID = int(m_cid.mid);
+	sd_.card()->readCID(&m_cid);
+	manufacturerID_ = int(m_cid.mid);
 }
 
 uint16_t FileManager::findFolderNumber()
@@ -29,7 +29,7 @@ uint16_t FileManager::findFolderNumber()
 	int a = 0;
 	sprintf(buffer, "%d", a);
 	const char* x = buffer;
-	while (sd.exists(x) && a < MAX_NUM_OF_FOLDERS) {
+	while (sd_.exists(x) && a < MAX_NUM_OF_FOLDERS) {
 		a++;
 		sprintf(buffer, "%d", a);
 		x = buffer;
@@ -40,12 +40,12 @@ uint16_t FileManager::findFolderNumber()
 void FileManager::openFile(char* filename)
 {
 	enterFolder();
-	if (!file.open(filename, O_WRONLY | O_APPEND | O_CREAT)) {
+	if (!file_.open(filename, O_WRONLY | O_APPEND | O_CREAT)) {
 		DEBUG_PRINT("error opening ");
 		DEBUG_PRINTLN(filename);
 
 		// close the connection the damaged file
-		file.close();
+		file_.close();
 		clearSPI();
 		return;
 	}
@@ -54,7 +54,7 @@ void FileManager::openFile(char* filename)
 
 void FileManager::closeFile(char* filename)
 {
-	file.close();
+	file_.close();
 	leaveFolder();
 	fileOpened_ = false;
 
@@ -66,10 +66,10 @@ void FileManager::createAudioFile(char* filename)
 {
 	enterFolder();
 	// creates new audio file
-	if (!file.open(filename, O_WRONLY | O_CREAT)) {
+	if (!file_.open(filename, O_WRONLY | O_CREAT)) {
 		DEBUG_PRINT("error creating audio file:");
 		DEBUG_PRINTLN(filename);
-		file.close();
+		file_.close();
 		return;
 	}
 	leaveFolder();
@@ -83,14 +83,14 @@ void FileManager::writeAudioData(int16_t* audioData)
 			// write 8-bit signed audio 
 
 			uint16_t* unsignedData = (uint16_t*)(audioData[i] + 32767);
-			file.write(*unsignedData >> 8);
-			writtenBytes++;
+			file_.write(*unsignedData >> 8);
+			writtenBytes_++;
 		}
 		else {
 			//file.write(audioData[i]);
-			file.write(lowByte(audioData[i]));
-			file.write(highByte(audioData[i]));
-			writtenBytes += 2;
+			file_.write(lowByte(audioData[i]));
+			file_.write(highByte(audioData[i]));
+			writtenBytes_ += 2;
 		}
 	}
 }
@@ -98,68 +98,68 @@ void FileManager::writeAudioData(int16_t* audioData)
 
 void FileManager::seekFile(uint32_t pos)
 {
-	file.seekSet(pos);
+	file_.seekSet(pos);
 }
 
 uint32_t FileManager::getFileSize()
 {
-	return file.fileSize();
+	return file_.fileSize();
 }
 
 void FileManager::writeSensorsLine(measuring* data, uint8_t dataLength, char timeStamp[14], int mode)
 {
-	if (!headerLineWritten) {
-		file.print("Time");
-		file.print(",");
+	if (!headerLineWritten_) {
+		file_.print("Time");
+		file_.print(",");
 		for (int i = 0; i < dataLength; i++) {
-			file.print(data[i].valueName);
+			file_.print(data[i].valueName);
 			if (i != dataLength - 1) {
-				file.print(",");
+				file_.print(",");
 			}
 			else {
 			#ifdef DEBUG_MEMORY
 				if (mode != -1) {
-					file.print(",");
-					file.print(",");
-					file.print("Modus");
-					file.print(",");
-					file.print("Log");
+					file_.print(",");
+					file_.print(",");
+					file_.print("Modus");
+					file_.print(",");
+					file_.print("Log");
 				}
 			#endif // DEBUG_MEMORY
-				file.println();
+				file_.println();
 			}
 		}
-		headerLineWritten = true;
-		writtenBytes = writtenBytes + 7 + 4 * dataLength;
+		headerLineWritten_ = true;
+		writtenBytes_ = writtenBytes_ + 7 + 4 * dataLength;
 	}
 
-	file.print(timeStamp);
-	file.print(",");
+	file_.print(timeStamp);
+	file_.print(",");
 
 	for (int i = 0; i < dataLength; i++) {
 		//file.print(data[i].valueName);
 		//file.print(":");
-		file.print(data[i].value);
+		file_.print(data[i].value);
 		if (i != dataLength - 1) {
-			file.print(",");
+			file_.print(",");
 		}
 		else {
 		#ifdef DEBUG_MEMORY
 			if (mode != -1) {
-				file.print(",");
-				file.print(",");
-				file.print(mode);
-				file.print(",");
-				file.print(freeMemory());
+				file_.print(",");
+				file_.print(",");
+				file_.print(mode);
+				file_.print(",");
+				file_.print(freeMemory());
 			}
 		#endif // DEBUG_MEMORY
-			file.println();
+			file_.println();
 		}
 	}
 
-	writtenBytes = writtenBytes + 6 * dataLength;
+	writtenBytes_ = writtenBytes_ + 6 * dataLength;
 
-	if (!file.sync() || file.getWriteError()) {
+	if (!file_.sync() || file_.getWriteError()) {
 		DEBUG_PRINTLN("Writing sensors' line failed");
 	}
 }
@@ -171,8 +171,8 @@ void FileManager::writeWavHeader(double recordingTime)
 	wavHeader.chunkSize = wavHeader.sampleRate * (recordingTime / 1000) * (BIT_DEPTH / 8) + 36;
 	wavHeader.subChunk2Size = wavHeader.sampleRate * (recordingTime / 1000) * (BIT_DEPTH / 8);
 
-	file.seek(0);
-	if (!file.write((byte*)&wavHeader, 44) > 0)
+	file_.seek(0);
+	if (!file_.write((byte*)&wavHeader, 44) > 0)
 	{
 		// log msg
 	}
@@ -181,18 +181,18 @@ void FileManager::writeWavHeader(double recordingTime)
 void FileManager::finalizeWav()
 {
 	unsigned long fSize = 0;
-	fSize = file.size() - 8;
-	file.seek(4);
+	fSize = file_.size() - 8;
+	file_.seek(4);
 	byte data[4] = { lowByte(fSize), highByte(fSize), fSize >> 16, fSize >> 24 };
-	file.write(data, 4);
+	file_.write(data, 4);
 	byte tmp;
-	file.seek(40);
+	file_.seek(40);
 	fSize = fSize - 36;
 	data[0] = lowByte(fSize);
 	data[1] = highByte(fSize);
 	data[2] = fSize >> 16;
 	data[3] = fSize >> 24;
-	file.write((byte*)data, 4);
+	file_.write((byte*)data, 4);
 }
 
 void FileManager::createFolder()
@@ -202,8 +202,8 @@ void FileManager::createFolder()
 
 	const char* dir = folderChar_;
 	// Create a new folder.
-	if (!sd.exists(dir)) {
-		if (!sd.mkdir(dir)) {
+	if (!sd_.exists(dir)) {
+		if (!sd_.mkdir(dir)) {
 			DEBUG_PRINTLN("Creating Folder failed");
 		}
 	}
@@ -212,7 +212,7 @@ void FileManager::createFolder()
 void FileManager::enterFolder()
 {
 	const char* dir = folderChar_;
-	if (!sd.chdir(dir)) {
+	if (!sd_.chdir(dir)) {
 		DEBUG_PRINTLN("Entering folder failed");
 	}
 }
@@ -220,18 +220,18 @@ void FileManager::enterFolder()
 void FileManager::leaveFolder()
 {
 	const char* dir = folderChar_;
-	if (!sd.chdir()) {
+	if (!sd_.chdir()) {
 		DEBUG_PRINTLN("Leaving folder failed");
 	}
 }
 
-byte FileManager::checkSDIntegrity()
+uint8_t FileManager::checkSDIntegrity()
 {
-	if (!sdInitialized) {
+	if (!sdInitialized_) {
 		return 2; // Error on SD Init
 	}
 
-	if (cardSize != 32010 || manufacturerID != 27) {
+	if (cardSize_ != 32010 || manufacturerID_ != 27) {
 		return 3; // Not a original SD
 	}
 
@@ -245,12 +245,12 @@ uint8_t FileManager::getOpenState()
 
 uint32_t FileManager::getWrittenBytes()
 {
-	return writtenBytes;
+	return writtenBytes_;
 }
 
 void FileManager::clearSPI()
 {
-	sd.card()->forceNotBusy();
+	sd_.card()->forceNotBusy();
 }
 
 void FileManager::showError()
@@ -266,7 +266,7 @@ void FileManager::showError()
 }
 void FileManager::getCardSectorCount()
 {
-	cardSectorCount = sd.card()->sectorCount();
+	cardSectorCount_ = sd_.card()->sectorCount();
 }
 void FileManager::eraseCard() {
 	uint32_t firstBlock = 0;
@@ -275,17 +275,17 @@ void FileManager::eraseCard() {
 
 	do {
 		lastBlock = firstBlock + ERASE_SIZE - 1;
-		if (lastBlock >= cardSectorCount) {
-			lastBlock = cardSectorCount - 1;
+		if (lastBlock >= cardSectorCount_) {
+			lastBlock = cardSectorCount_ - 1;
 		}
-		if (!(sd.card()->erase(firstBlock, lastBlock))) {
+		if (!(sd_.card()->erase(firstBlock, lastBlock))) {
 		}
 		if ((n++) % 64 == 63) {
 		}
 		firstBlock += ERASE_SIZE;
-	} while (firstBlock < cardSectorCount);
+	} while (firstBlock < cardSectorCount_);
 
-	if (!sd.card()->readSector(0, sectorBuffer)) {
+	if (!sd_.card()->readSector(0, sectorBuffer_)) {
 	}
 }
 
@@ -294,9 +294,9 @@ void FileManager::formatCard() {
 	FatFormatter fatFormatter;
 
 	// Format exFAT if larger than 32GB.
-	bool rtn = cardSectorCount > 67108864 ?
-		exFatFormatter.format(sd.card(), sectorBuffer, &Serial) :
-		fatFormatter.format(sd.card(), sectorBuffer, &Serial);
+	bool rtn = cardSectorCount_ > 67108864 ?
+		exFatFormatter.format(sd_.card(), sectorBuffer_, &Serial) :
+		fatFormatter.format(sd_.card(), sectorBuffer_, &Serial);
 
 	if (!rtn) {
 	}
@@ -304,7 +304,7 @@ void FileManager::formatCard() {
 
 uint32_t FileManager::getCardSize()
 {
-	return cardSize;
+	return cardSize_;
 }
 
 

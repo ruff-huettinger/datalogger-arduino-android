@@ -1,6 +1,6 @@
 #include "SensorManager.h"
 
-bool SensorManager::measurementActive = false;
+uint8_t SensorManager::measurementActive_ = false;
 
 void SensorManager::getSensorValues(measuring* arr)
 {
@@ -129,7 +129,7 @@ void SensorManager::getSensorValues(measuring* arr)
 #endif // USING_ANALOG_LIGHT
 
 	// --- Battery:
-	// fill one slots of the struct-array
+	// fill one slot of the struct-array
 
 #ifdef USING_BATTERY_SENSOR
 	PowerManager pm;
@@ -224,21 +224,12 @@ void SensorManager::printSensorValues(measuring* dataToPrint, uint8_t numOfSenso
 	}
 }
 
-/*
-void SensorManager::addIDs(measuring* values)
+uint8_t SensorManager::getMeasurementActive()
 {
-	for (int i = 0; i < NUMBER_OF_SENSORS_FOR_APP; i++) {
-		values[i].id = i;
-	}
-}
-*/
-
-bool SensorManager::getMeasurementActive()
-{
-	return measurementActive;
+	return measurementActive_;
 }
 
-void SensorManager::setMeasurementActive(bool active)
+void SensorManager::setMeasurementActive(uint8_t active)
 {
-	measurementActive = active;
+	measurementActive_ = active;
 }

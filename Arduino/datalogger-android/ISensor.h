@@ -16,7 +16,7 @@ class ISensor
 {
 public:
 
-	ISensor() {}
+	ISensor() {};
 	virtual ~ISensor() {};
 
 	// initialize the sensor

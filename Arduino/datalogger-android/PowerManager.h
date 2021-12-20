@@ -22,13 +22,9 @@ private:
 	uint16_t MIN_ANALOG_READ = 513; //@ 3.3 V input
 
 	void initExternHTS();
-
 	void initSDModul();
-
 	void initAnalogLights();
-
 	void initBattery();
-
 	float mapfloat(float x, float in_min, float in_max, float out_min, float out_max);
 
 public:

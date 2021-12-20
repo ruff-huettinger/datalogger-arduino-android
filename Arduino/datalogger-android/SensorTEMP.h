@@ -2,7 +2,6 @@
 
 #include "ISensor.h"
 #include "Wire.h"
-
 #include "HTS221.h"
 
 
@@ -18,7 +17,6 @@
  *
  */
 
- // toDo: find right OFFSETS
 
 class SensorTemp : public ISensor
 {

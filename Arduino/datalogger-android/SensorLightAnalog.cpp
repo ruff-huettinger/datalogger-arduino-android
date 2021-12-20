@@ -34,7 +34,6 @@ float SensorLightAnalog::readValue(uint8_t pin)
 			//idle
 		}
 	}
-
 	digitalWrite(PIN_ENABLE_ANALOG_LIGHT, HIGH);
 	uint32_t avg = total / NUM_OF_LIGHT_READINGS;
 	return (avg / 1024.0f) * 100.0f;

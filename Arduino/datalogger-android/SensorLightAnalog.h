@@ -17,9 +17,9 @@ private:
 	uint32_t NUM_OF_LIGHT_READINGS = 500;
 	float readValue(uint8_t pin);
 public:
-	virtual void init();
-	virtual void stop();
-	virtual void getSensorValue(measuring* value);
+	void init();
+	void stop();
+	void getSensorValue(measuring* value);
 
 	SensorLightAnalog() {};
 	~SensorLightAnalog() {};

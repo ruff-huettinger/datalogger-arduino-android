@@ -16,6 +16,9 @@
  *
  */
 
+ // Uncomment for fast compiling with Visual Micro
+#define FAST_COMPILE
+
  // Uncomment for using the new SHTC3-Temp sensor
  //#define USING_SHTC3
 
@@ -31,7 +34,7 @@
  // Uncomment for adding memory information to sensor-data
 #define DEBUG_MEMORY
 
-// Uncomment for mapping hours -> minutes for debugging
+// Uncomment for setting a manual hour mode
 //#define DEBUG_TIME
 
 // Uncomment for setting a manual start time instead of using BLE phone time
@@ -117,7 +120,7 @@ const static uint32_t AUDIO_FILE_WRITE_DELAY_MS = 2000;
 // use a lower gain if records overmodulate
 const static uint8_t GAIN = 80;
 
-// Keep these settings for 15kHz/8bit Audio
+// keep these settings for best-quality 15kHz/8bit Audio
 const static uint16_t BUFFER_SIZE = 256;
 
 const static uint32_t SAMPLE_RATE = 31250;
@@ -131,19 +134,18 @@ const static uint8_t NUM_OF_CHANNELS = 1;
 struct wavStruct
 {
 	const char chunkID[4] = { 'R', 'I', 'F', 'F' };
-	uint32_t chunkSize = 0; //Size of (entire file in bytes - 8 bytes) or (data size + 36)
+	uint32_t chunkSize = 0; // change after recording
 	const char format[4] = { 'W', 'A', 'V', 'E' };
 	const char subchunkID[4] = { 'f', 'm', 't', ' ' };
 	const uint32_t subchunkSize = 16;
 	const uint16_t audioFormat = 1;               //PCM == 1
 	const uint16_t numChannels = NUM_OF_CHANNELS; //1=Mono, 2=Stereo
 	const uint32_t sampleRate = SAMPLE_RATE;
-	const uint32_t byteRate = SAMPLE_RATE * NUM_OF_CHANNELS * (BIT_DEPTH / 8); //== SampleRate * NumChannels * BitsPerSample/8
-	const uint16_t blockAlign = NUM_OF_CHANNELS * BIT_DEPTH / 8;                                           //== NumChannels * BitsPerSample/8
-	const uint16_t bitsPerSample = BIT_DEPTH;                                //8,16,32...
+	const uint32_t byteRate = SAMPLE_RATE * NUM_OF_CHANNELS * (BIT_DEPTH / 8);
+	const uint16_t blockAlign = NUM_OF_CHANNELS * BIT_DEPTH / 8;
+	const uint16_t bitsPerSample = BIT_DEPTH;
 	const char subChunk2ID[4] = { 'd', 'a', 't', 'a' };
-	uint32_t subChunk2Size = 0; //== NumSamples * NumChannels * BitsPerSample/8
-									 //Data                                       //The audio data
+	uint32_t subChunk2Size = 0; // change after recording
 };
 
 /*********************************************************/

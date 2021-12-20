@@ -7,7 +7,6 @@
  *
  * - holds the definitions for hour-modes and hour-tables
  * - contains declarations of 3 pre-defined tables
- * - toDo: replace 3 tables by 1 table generated via BLE
  *
  * @author Johannes Brunner
  *

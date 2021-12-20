@@ -19,17 +19,13 @@
 class TimeManager
 {
 private:
-	tm currentTime;
-	tm nextStateChangeTime;
-	time_t unixSecs;
+	tm currentTime_;
+	tm nextStateChangeTime_;
+	time_t unixSecs_;
 
 	void updateTimes();
-
 	void updateCurrentTime();
-
 	tm getNextStateChangeTime(uint8_t currentMinute, uint8_t measuresPerHour);
-
-	tm getNextStateChangeTimeDebug(uint8_t currentMinute, uint8_t measuresPerHour);
 
 public:
 	double getDiffTime();

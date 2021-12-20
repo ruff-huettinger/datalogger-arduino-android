@@ -1,15 +1,14 @@
 #include "BLEManager.h"
 
-bool BLEManager::connected_ = false;
-bool BLEManager::timeSet_ = false;
-bool BLEManager::disconnected_ = false;
-bool BLEManager::initialized_ = false;
+uint8_t BLEManager::connected_ = false;
+uint8_t BLEManager::timeSet_ = false;
+uint8_t BLEManager::disconnected_ = false;
+uint8_t BLEManager::initialized_ = false;
 uint32_t BLEManager::bleStartTime_ = 0;
-uint32_t BLEManager::lastBLEInteractionTime = 0;
-byte BLEManager::updatedTable[24] = { 0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,0,0 };
-byte BLEManager::updatedInterval = 1;
-
-BLECharacteristic* BLEManager::characteristics[NUM_OF_CHARACTERISTICS];
+uint32_t BLEManager::lastBLEInteractionTime_ = 0;
+uint8_t BLEManager::updatedTable_[24] = { 0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,2,0,0,0,0,0,0,0,0 };
+uint8_t BLEManager::updatedInterval_ = 1;
+BLECharacteristic* BLEManager::characteristics_[NUM_OF_CHARACTERISTICS];
 
 
 void BLEManager::init()
@@ -30,10 +29,10 @@ void BLEManager::begin(measuring* currentSensorValues, uint8_t dataLength, float
 	// set the local name peripheral advertises
 	BLE.setLocalName("EggCallback");
 
-	BLE.setAdvertisedService(*eggService);
+	BLE.setAdvertisedService(*service_);
 
 	// add service
-	BLE.addService(*eggService);
+	BLE.addService(*service_);
 
 	initCallbacks();
 
@@ -46,9 +45,9 @@ void BLEManager::begin(measuring* currentSensorValues, uint8_t dataLength, float
 	byte startedValue[1] = { isStarted() };
 
 	if (!isStarted()) {
-		startedValue[0] = fm->checkSDIntegrity();
+		startedValue[0] = fm_->checkSDIntegrity();
 	}
-	characteristics[STARTED]->setValue(startedValue, 1);
+	characteristics_[STARTED]->setValue(startedValue, 1);
 
 	DEBUG_PRINTLN(("Bluetooth device active, waiting for connections..."));
 }
@@ -63,7 +62,7 @@ void BLEManager::updateBatSpaceValues(float batteryPercentage, uint32_t cardSize
 		bytesToSend[h + 8] = ((byte*)&writtenBytes)[h];
 	}
 
-	characteristics[BATSPACE]->setValue(bytesToSend, 12);
+	characteristics_[BATSPACE]->setValue(bytesToSend, 12);
 }
 
 void BLEManager::updateModesValue()
@@ -77,23 +76,23 @@ void BLEManager::updateModesValue()
 
 	modeToBLE(modesBefore, modesAfter);
 
-	characteristics[MODES]->setValue(modesAfter, 12);
+	characteristics_[MODES]->setValue(modesAfter, 12);
 
 	byte intervalToSend[1] = { activeTable[0].numOfMeasures };
-	characteristics[INTERVAL]->setValue(intervalToSend, 1);
+	characteristics_[INTERVAL]->setValue(intervalToSend, 1);
 }
 
 void BLEManager::initServices()
 {
-	eggService = new BLEService(serviceUUID);
+	service_ = new BLEService(SERVICE_UUID);
 }
 
 
 void BLEManager::initCharacteristics()
 {
 	for (int i = 0; i < NUM_OF_CHARACTERISTICS; i++) {
-		characteristics[i] = new BLECharacteristic(defs[i].uuid, defs[i].properties, defs[i].size);
-		eggService->addCharacteristic(*characteristics[i]);
+		characteristics_[i] = new BLECharacteristic(defs_[i].uuid, defs_[i].properties, defs_[i].size);
+		service_->addCharacteristic(*characteristics_[i]);
 	}
 
 }
@@ -105,8 +104,8 @@ void BLEManager::initCallbacks()
 	BLE.setEventHandler(BLEDisconnected, onDisconnect);
 
 	for (int i = 0; i < NUM_OF_CHARACTERISTICS; i++) {
-		if (defs[i].properties == BLEWrite || (BLERead | BLEWrite)) {
-			characteristics[i]->setEventHandler(BLEWritten, onMessage);
+		if (defs_[i].properties == BLEWrite || (BLERead | BLEWrite)) {
+			characteristics_[i]->setEventHandler(BLEWritten, onMessage);
 		}
 	}
 
@@ -137,35 +136,35 @@ void BLEManager::onMessage(BLEDevice central, BLECharacteristic characteristic)
 	LOGMEMORY;
 	DEBUG_PRINTLN(id);
 
-	if (strcmp(id, timeUUID) == 0) {
+	if (strcmp(id, TIME_UUID) == 0) {
 		if (bleStartTime_ == 0) {
-			bleStartTime_ = *(long*)characteristics[TIME]->value();
+			bleStartTime_ = *(long*)characteristics_[TIME]->value();
 			DEBUG_PRINT("BLE received time value: ");
 			DEBUG_PRINTLN(bleStartTime_);
 			timeSet_ = true;
 		}
 	}
 
-	else if (strcmp(id, modesUUID) == 0) {
+	else if (strcmp(id, MODES_UUID) == 0) {
 		DEBUG_PRINTLN("Received new modes table");
 
-		byte* arr = (byte*)characteristics[MODES]->value();
+		byte* arr = (byte*)characteristics_[MODES]->value();
 
-		bleToMode(updatedTable, arr);
+		bleToMode(updatedTable_, arr);
 	}
 
-	else if (strcmp(id, intervalUUID) == 0) {
+	else if (strcmp(id, INTERVAL_UUID) == 0) {
 		DEBUG_PRINT("BLE received interval value: ");
-		updatedInterval = characteristics[INTERVAL]->value()[0];
-		DEBUG_PRINTLN(updatedInterval);
+		updatedInterval_ = characteristics_[INTERVAL]->value()[0];
+		DEBUG_PRINTLN(updatedInterval_);
 	}
 
-	else if (strcmp(id, updateUUID) == 0) {
+	else if (strcmp(id, UPDATE_UUID) == 0) {
 		refreshSensors();
 	}
 
-	else if (strcmp(id, startedUUID) == 0) {
-		byte id = (characteristics[STARTED]->value())[0];
+	else if (strcmp(id, STARTED_UUID) == 0) {
+		byte id = (characteristics_[STARTED]->value())[0];
 		DEBUG_PRINT(id);
 		if (id == 1) {
 			DEBUG_PRINTLN("Received start cmd");
@@ -220,7 +219,7 @@ void BLEManager::refreshSensors()
 			bytesToSend[i + (j + 1)] = ((byte*)&sensorData[(i - 4) / 5].value)[j];
 		}
 	}
-	characteristics[SENSORS]->setValue(bytesToSend, numOfBytesToSend);
+	characteristics_[SENSORS]->setValue(bytesToSend, numOfBytesToSend);
 	delete[] sensorData;
 	delete[] bytesToSend;
 }
@@ -231,21 +230,21 @@ uint32_t BLEManager::getStartTime() {
 
 uint32_t BLEManager::getLastBLEInteractionTime()
 {
-	return lastBLEInteractionTime;
+	return lastBLEInteractionTime_;
 }
 
-byte* BLEManager::getUpdatedTable()
+uint8_t* BLEManager::getUpdatedTable()
 {
-	return updatedTable;
+	return updatedTable_;
 }
 
-byte BLEManager::getUpdatedInterval() {
-	return updatedInterval;
+uint8_t BLEManager::getUpdatedInterval() {
+	return updatedInterval_;
 }
 
 void BLEManager::setFileManager(FileManager* fmNew)
 {
-	fm = fmNew;
+	fm_ = fmNew;
 }
 
 
@@ -261,33 +260,33 @@ void BLEManager::end()
 	isRunning_ = false;
 }
 
-bool BLEManager::isRunning() {
+uint8_t BLEManager::isRunning() {
 	return isRunning_;
 
 }
 
-bool BLEManager::getConnectionState()
+uint8_t BLEManager::getConnectionState()
 {
 	return connected_;
 }
 
-bool BLEManager::isTimeSet()
+uint8_t BLEManager::isTimeSet()
 {
 	return timeSet_;
 }
 
-bool BLEManager::isStarted()
+uint8_t BLEManager::isStarted()
 {
 	return initialized_;
 }
 
-void BLEManager::setConnectionState(bool state)
+void BLEManager::setConnectionState(uint8_t state)
 {
 	connected_ = state;
 	disconnected_ = state;
 }
 
-void BLEManager::bleToMode(byte* large, byte* small)
+void BLEManager::bleToMode(uint8_t* large, uint8_t* small)
 {
 	for (int i = 0; i < 12; i++) {
 		byte fullNum = small[i];
@@ -298,7 +297,7 @@ void BLEManager::bleToMode(byte* large, byte* small)
 	}
 }
 
-void BLEManager::modeToBLE(byte* large, byte* small)
+void BLEManager::modeToBLE(uint8_t* large, uint8_t* small)
 {
 	for (int i = 0; i < 24; i = i + 2) {
 		byte firstValue = (byte)large[i];
@@ -306,86 +305,3 @@ void BLEManager::modeToBLE(byte* large, byte* small)
 		small[i / 2] = (byte)(firstValue + secondValue * 3);
 	}
 }
-
-
-/*
-void BLEManager::refreshTilt() {
-	Acceleromter acc;
-	byte arr[16];
-	long x = 76;
-	arr[0] = x;
-
-	float pitch = acc.getPitch();
-	float roll = acc.getRoll();
-	float yaw = acc.getYaw();
-
-	for (int j = 4; j < sizeof(float) + 4; j++) {
-		arr[j] = ((byte*)&pitch)[j];
-	}
-
-	long l = *(long*)&pitch;
-
-	arr[4] = l & 0x00FF;
-	arr[5] = (l >> 8) & 0x00FF;
-	arr[6] = (l >> 16) & 0x00FF;
-	arr[7] = l >> 24;
-
-	l = *(long*)&roll;
-
-	arr[8] = l & 0x00FF;
-	arr[9] = (l >> 8) & 0x00FF;
-	arr[10] = (l >> 16) & 0x00FF;
-	arr[11] = l >> 24;
-
-	l = *(long*)&yaw;
-
-	arr[12] = l & 0x00FF;
-	arr[13] = (l >> 8) & 0x00FF;
-	arr[14] = (l >> 16) & 0x00FF;
-	arr[15] = l >> 24;
-
-	characteristics[SENSORS]->setValue(arr, 16);
-}
-
-void BLEManager::refreshQuat() {
-	Acceleromter acc;
-	byte arr[20];
-	long x = 76;
-	arr[0] = x;
-
-	float* q;
-	q = acc.getQuaternion();
-
-
-	long l = *(long*)&q[0];
-
-	arr[4] = l & 0x00FF;
-	arr[5] = (l >> 8) & 0x00FF;
-	arr[6] = (l >> 16) & 0x00FF;
-	arr[7] = l >> 24;
-
-	l = *(long*)&q[1];
-
-	arr[8] = l & 0x00FF;
-	arr[9] = (l >> 8) & 0x00FF;
-	arr[10] = (l >> 16) & 0x00FF;
-	arr[11] = l >> 24;
-
-	l = *(long*)&q[2];
-
-	arr[12] = l & 0x00FF;
-	arr[13] = (l >> 8) & 0x00FF;
-	arr[14] = (l >> 16) & 0x00FF;
-	arr[15] = l >> 24;
-
-	l = *(long*)&q[3];
-
-	arr[16] = l & 0x00FF;
-	arr[17] = (l >> 8) & 0x00FF;
-	arr[18] = (l >> 16) & 0x00FF;
-	arr[19] = l >> 24;
-
-	characteristics[SENSORS]->setValue(arr, 20);
-}
-*/
-
