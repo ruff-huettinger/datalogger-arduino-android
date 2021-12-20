@@ -20,7 +20,7 @@ class Recorder
 private:
 	static int16_t sampleBuffer_[BUFFER_SIZE];
 	uint8_t isRecording_ = false;
-	static volatile int16_t bufferFilled_;
+	static volatile uint8_t bufferFilled_;
 
 	// callback-function for pdm-lib
 	static void onPDMdata();

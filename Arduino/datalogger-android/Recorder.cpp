@@ -1,7 +1,7 @@
 #include "Recorder.h"
 
 int16_t Recorder::sampleBuffer_[BUFFER_SIZE];
-volatile int16_t Recorder::bufferFilled_ = 0;
+volatile uint8_t Recorder::bufferFilled_ = 0;
 
 void Recorder::init()
 {
@@ -29,8 +29,7 @@ void Recorder::onPDMdata() {
 	// read into the sample buffer
 	PDM.read(sampleBuffer_, bytesAvailable);
 
-	// 16-bit, 2 bytes per sample
-	bufferFilled_ = bytesAvailable / 2;
+	bufferFilled_ = true;
 }
 
 int16_t* Recorder::getRecordedSamples()
@@ -52,7 +51,7 @@ uint8_t Recorder::isBufferFull()
 
 void Recorder::setBufferEmpty()
 {
-	bufferFilled_ = 0;
+	bufferFilled_ = false;
 }
 
 uint8_t Recorder::isRecording() {
