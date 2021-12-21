@@ -1,16 +1,17 @@
-/*
-  This example creates a BLE peripheral with a service containing a characeristic with multiple values combined.
-  The yellow LED shows the BLE module is initialized.
-  The green LED shows RSSI of zero. The more it blinks the worse the connection.
+﻿/*
+  BLEMultiValueTest
+
+  - Sending multiple sensor value in 1 BLE characteristic
 
   The circuit:
-  - Arduino Nano 33 BLE Sense board.
+  * Board: Arduino Nano 33 BLE Sense
+  * BLE-Device
 
-  You can use a generic BLE central app, like LightBlue (iOS and Android) or
-  nRF Connect (Android), to interact with the services and characteristics
-  created in this sketch.
+  Created 15 02 2021
+  By Johannes Brunner
 
-  This example code is in the public domain.
+  Src:
+  https://forum.arduino.cc/t/arduino-nan-ble-33-how-to-send-data/632690/7
 */
 
 #include <ArduinoBLE.h>

@@ -1,6 +1,18 @@
+/*
+  BatteryTest
+
+  - A test for measuring the analog battery value
+
+  The circuit:
+  * Electronic Egg
+  
+  Created 16 02 2021
+  By Johannes Brunner
+
+*/
+
 uint8_t ENABLE_PIN = 6;
 uint8_t READ_PIN = 21;
-
 
 void setup() {
 	while (!Serial);

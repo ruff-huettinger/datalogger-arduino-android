@@ -1,3 +1,17 @@
+﻿/*
+  WatchdogTest
+
+  - Testing the internal watchdog using a ble-device
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+  * BLE-Device
+
+  Created 24 08 2021
+  By Johannes Brunner
+
+*/
+
 #include <ArduinoBLE.h>
 
 BLEService ledService("19B10000-E8F2-537E-4F6C-D104768A1214"); // create service

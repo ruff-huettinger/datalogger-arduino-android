@@ -1,3 +1,16 @@
+﻿/*
+  TimeOffsetTest
+
+  - Testing the offset of internal clocks
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+
+  Created 05 03 2021
+  By Johannes Brunner
+
+*/
+
 #include "mbed.h"
 #include "ArduinoBLE.h"
 #include "PDMdup.h"

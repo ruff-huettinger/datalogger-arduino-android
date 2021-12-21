@@ -1,3 +1,16 @@
+﻿/*
+  ExternalSensorTest
+
+  - A test for enabling/disabling external connected sensors
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense with external sensors
+  * Alternative: Electronc Egg
+
+  Created 17 02 2021
+  By Johannes Brunner
+
+*/
 
 uint8_t ENABLE_PIN = 4;
 

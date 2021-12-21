@@ -1,3 +1,17 @@
+﻿/*
+  SDSpeedTest
+
+  - Testing write and read speeds 
+  - Using greiman's sdfat-lib
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+  * SD Modul
+
+  Created 04 01 2021
+  By Johannes Brunner
+
+*/
 
 #define SD_CS_PIN 10
 #define TEST_FILE_NAME "testfile.txt"

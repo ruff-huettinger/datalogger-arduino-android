@@ -1,3 +1,19 @@
+﻿/*
+  TempTest
+
+  - Testing Temperature and Humidity (HTS221)
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+  * Use internal sensor (Wire1)
+  * Use external sensor (Wire)
+
+  Created 02 08 2021
+  By Johannes Brunner
+
+*/
+
+
 #include "Wire.h"
 #include "HTS221.h"
 #include "HTS.h"

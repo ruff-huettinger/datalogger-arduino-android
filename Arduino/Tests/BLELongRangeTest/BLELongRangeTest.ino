@@ -1,19 +1,19 @@
-/*==============================================
-DEMONSTRATION OF THE LONG RANGE FEATURE :
+﻿/*
+  BLELongRangeTest
 
-The Bluetooth is managed by a class ("LRDemo").
-When an objet is created from this class, we
-can call the .start() function. It will initialize
-Bluetooth and once it's done, it will advertise
-using PHY CODED technologie (= Long range) with
-the max output power (8dbm). It will be connectable
-and keep the long range mode during connection
-however it won't have specifics services.
+  - Testing long range ble with mbed
 
-WORKING ON MBED 5 WITH ARDUINO NANO 33 BLE (NRF52840)
-Library needed : BLE_API
-Average Consumption : 1,20mA
-================================================*/
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+  * Scanning BLE Device
+  
+  Created 04 11 2021
+  By Johannes Brunner
+
+  Src:
+  https://forum.arduino.cc/t/nano-33-ble-nrf52840-ble-long-range-pairing-mbed-ble-api-adafruit-lib/644684
+
+*/
 
 /*--------INCLUDES--------*/
 #include "ble/BLE.h"

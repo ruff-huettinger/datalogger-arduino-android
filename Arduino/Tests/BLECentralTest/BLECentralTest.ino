@@ -1,14 +1,15 @@
-/*
-  Scan
+﻿/*
+  BLECentralTest
 
-  This example scans for BLE peripherals and prints out their advertising details:
-  address, local name, advertised service UUID's.
-
+  - A test for using the arduino as central device (client) in ble
+  
   The circuit:
-  - Arduino MKR WiFi 1010, Arduino Uno WiFi Rev2 board, Arduino Nano 33 IoT,
-	Arduino Nano 33 BLE, or Arduino Nano 33 BLE Sense board.
+  * Board: Arduino Nano 33 BLE Sense
+  * Second ble-device acting as peripheral
 
-  This example code is in the public domain.
+  Created 18 11 2021
+  By Johannes Brunner
+
 */
 
 #include <ArduinoBLE.h>

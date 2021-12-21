@@ -1,3 +1,18 @@
+﻿/*
+  HeaterTest
+
+  - A test for heating the HTS221
+  - Intention: Fix Humidity Problems
+  - Result: Does not work
+
+  The circuit:
+  * Electronic Egg
+
+  Created 09 12 2021
+  By Johannes Brunner
+
+*/
+
 #include <ArduinoBLE.h>
 #include "SensorTEMP.h"
 #include "Arduino.h"

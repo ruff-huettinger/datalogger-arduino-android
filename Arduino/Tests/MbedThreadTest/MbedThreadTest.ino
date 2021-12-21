@@ -1,3 +1,15 @@
+﻿/*
+  3DLiveIMUTest
+
+  - Testing thread functions of mbed os
+
+  The circuit:
+  * Board: Arduino Nano 33 BLE Sense
+
+  Created 12 02 2021
+  By Johannes Brunner
+
+*/
 
 #include <mbed.h>
 #include "MemoryFree.h"
