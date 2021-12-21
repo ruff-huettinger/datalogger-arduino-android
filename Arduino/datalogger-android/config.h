@@ -16,9 +16,6 @@
  *
  */
 
- // Uncomment for fast compiling with Visual Micro
-#define FAST_COMPILE
-
  // Uncomment for using the new SHTC3-Temp sensor
  //#define USING_SHTC3
 

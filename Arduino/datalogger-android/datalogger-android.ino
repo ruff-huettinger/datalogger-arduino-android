@@ -9,17 +9,16 @@
  */
 
 #include <mbed.h>
-#include <Arduino.h>
-#include "config.h"
 #include "BLEManager.h"
 #include "FileManager.h"
 #include "SensorManager.h"
 #include "Recorder.h"
+#include "config.h"
 #include "StateTable.h"
 #include "TimeManager.h"
 
-#ifdef FAST_COMPILE
- // Libs included here for visual micro compiler
+// Libs included here for visual micro compiler
+#include <Arduino.h>
 #include <stdint.h>
 #include <SPI.h>
 #include <Wire.h>
@@ -31,7 +30,6 @@
 #include "HTS221.h"
 #include "SparkFun_SHTC3.h"
 #include "MemoryFree.h"
-#endif // FAST_COMPILE
 
 using namespace rtos;
 using namespace mbed;
